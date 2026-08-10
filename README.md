@@ -30,6 +30,13 @@ Tenha o Python 3 instalado e execute:
 python main.py
 ```
 
+## Próximas melhorias
+
+- Salvar os dados em arquivo JSON ou banco de dados
+- Criar uma interface gráfica
+- Permitir edição de equipamentos cadastrados
+- Exportar relatórios
+
 ## Status
 
 Projeto educacional em desenvolvimento. Novas funcionalidades serão adicionadas conforme o aprendizado evoluir.

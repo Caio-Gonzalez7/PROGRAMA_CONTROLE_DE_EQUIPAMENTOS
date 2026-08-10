@@ -68,8 +68,23 @@ while True:
 
     # PESQUISAR
     elif func == 3:
-        print('\nPesquisa ainda não atualizada.')
+        patrimonio_pesquisado = input(
+            '\nDigite o patrimônio que deseja pesquisar: '
+        ).strip().upper()
 
+        encontrado = False
+
+        for equipamento in equipamentos:
+            if patrimonio_pesquisado == equipamento[1]:
+                print('\nEquipamento encontrado!')
+                print(f'Nome: {equipamento[0]}')
+                print(f'Patrimônio: {equipamento[1]}')
+                print(f'Serial: {equipamento[2]}')
+
+                encontrado = True
+                break
+        if not encontrado:
+            print('\nEquipamento não encontrado!')
 
     # REMOVER
     elif func == 4:

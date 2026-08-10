@@ -16,9 +16,12 @@ while True:
     func = int(input('\nESCOLHA: '))
 
     if func == 1:
+        if novo_serial in sereais:
+            print("Esse serial já está cadastrado!")
         equipamentos.append(str(input('\nEQUIPAMENTO: ')))
         patrimonios.append(input('PATRIMÔNIO: '))
         sereais.append(input('SERIAL: '))
+        print('\nCADATRADO! \n')
 
     if func == 2:
         for p in range(len(equipamentos)):
@@ -31,6 +34,10 @@ while True:
                 print('Equipamento encontrado!')
             else:
                 print('Equipamento não encontrado!')
+
+    if func == 4:
+        
+
 
 
     if func == 0:

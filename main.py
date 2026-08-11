@@ -88,7 +88,43 @@ while True:
 
     # REMOVER
     elif func == 4:
-        print('\nRemoção ainda não atualizada')
+        if len(equipamentos) == 0:
+            print('\nNenhum equipamento cadastrado')
+
+        else:
+            patrimonio_remover = input(
+                '\nDigite o patrimônio do equipamento: '
+            ).strip().upper()
+
+            encontrado = False
+
+            for equipamento in equipamentos:
+                if patrimonio_remover == equipamento[1]:
+                    encontrado = True
+
+                    print('\nEquipamento encontrado!')
+                    print(f'Nome: {equipamento[0]} ')
+                    print(f'Patrimônio: {equipamento[1]}')
+                    print(f'Serial: {equipamento[2]}')
+
+                    confirmacao = input(
+                        '\nDeseja realmente remover? [S/N]: '
+                    ).strip().upper()
+
+                    if confirmacao == 'S':
+                        equipamentos.remove(equipamento)
+                        print('\nEquipamento removido com sucesso!')
+
+                    elif confirmacao == 'N':
+                        print('\nRemoção cancelada!')
+
+                    else:
+                        print('\nOpção inválida. Remoção cancelada!')
+
+                    break
+
+            if not encontrado:
+                print('\nEquipamento não encontrado!')
 
     # RESUMO
     elif func == 5:

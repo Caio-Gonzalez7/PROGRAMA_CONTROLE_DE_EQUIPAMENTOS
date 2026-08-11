@@ -1,6 +1,4 @@
 equipamentos = []
-patrimonios = []
-seriais = []
 
 while True:
     print('\n======= CONTROLE DE EQUIPAMENTOS =======')
@@ -26,19 +24,31 @@ while True:
         novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
         novo_serial = input('SERIAL: ').strip().upper()
 
-        if novo_patrimonio in patrimonios:
-            print('\nEsse patrimônio já está cadastrado!')
+        patrimonio_duplicado = False
+        serial_duplicado = False
 
-        elif novo_serial in seriais:
-            print('\nEsse serial já está cadastrado!')
+        for equipamento in equipamentos:
+            if novo_patrimonio == equipamento[1]:
+                patrimonio_duplicado = True
 
-        elif novo_equipamento == '' or novo_patrimonio == '' or novo_serial == '':
+            if novo_serial == equipamento[2]:
+                serial_duplicado = True
+
+        if novo_equipamento == '' or novo_patrimonio == '' or novo_serial == '':
             print('\nTodos os campos devem ser preenchidos!')
 
+        elif patrimonio_duplicado:
+            print('\nEsse patrimônio já está cadastrado!')
+
+        elif serial_duplicado:
+            print('\nEsse serial já está cadastrado!')
+
         else:
-            equipamentos.append(novo_equipamento)
-            patrimonios.append(novo_patrimonio)
-            seriais.append(novo_serial)
+            equipamentos.append([
+                novo_equipamento,
+                novo_patrimonio,
+                novo_serial
+            ])
 
             print('\nEquipamento cadastrado!')
 
@@ -52,9 +62,9 @@ while True:
 
             for posicao in range(len(equipamentos)):
                 print(f'\nEquipamento {posicao + 1}')
-                print(f'Nome: {equipamentos[posicao]}')
-                print(f'Patrimônio: {patrimonios[posicao]}')
-                print(f'Serial: {seriais[posicao]}')
+                print(f'Nome: {equipamentos[posicao][0]}')
+                print(f'Patrimônio: {equipamentos[posicao][1]}')
+                print(f'Serial: {equipamentos[posicao][2]}')
 
     # PESQUISAR
     elif func == 3:
@@ -62,47 +72,23 @@ while True:
             '\nDigite o patrimônio que deseja pesquisar: '
         ).strip().upper()
 
-        if patrimonio_pesquisado in patrimonios:
-            posicao = patrimonios.index(patrimonio_pesquisado)
+        encontrado = False
 
-            print('\nEquipamento encontrado!')
-            print(f'Nome: {equipamentos[posicao]}')
-            print(f'Patrimônio: {patrimonios[posicao]}')
-            print(f'Serial: {seriais[posicao]}')
+        for equipamento in equipamentos:
+            if patrimonio_pesquisado == equipamento[1]:
+                print('\nEquipamento encontrado!')
+                print(f'Nome: {equipamento[0]}')
+                print(f'Patrimônio: {equipamento[1]}')
+                print(f'Serial: {equipamento[2]}')
 
-        else:
+                encontrado = True
+                break
+        if not encontrado:
             print('\nEquipamento não encontrado!')
 
     # REMOVER
     elif func == 4:
-        patrimonio_remover = input(
-            '\nDigite o patrimônio que deseja remover: '
-        ).strip().upper()
-
-        if patrimonio_remover in patrimonios:
-            posicao = patrimonios.index(patrimonio_remover)
-
-            print('\nEquipamento encontrado!')
-            print(f'Nome: {equipamentos[posicao]}')
-            print(f'Patrimônio: {patrimonios[posicao]}')
-            print(f'Serial: {seriais[posicao]}')
-
-            confirmacao = input(
-                '\nDeseja realmente remover? [S/N]: '
-            ).strip().upper()
-
-            if confirmacao == 'S':
-                equipamentos.pop(posicao)
-                patrimonios.pop(posicao)
-                seriais.pop(posicao)
-
-                print('\nEquipamento removido!')
-
-            else:
-                print('\nRemoção cancelada!')
-
-        else:
-            print('\nEquipamento não encontrado!')
+        print('\nRemoção ainda não atualizada')
 
     # RESUMO
     elif func == 5:

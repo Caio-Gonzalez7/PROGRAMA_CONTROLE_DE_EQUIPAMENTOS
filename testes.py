@@ -1,4 +1,32 @@
-equipamentos = []
+import json
+
+ARQUIVO_DADOS = 'equipamentos.json'
+
+
+def carregar_equipamentos():
+    try:
+        with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as arquivo:
+            return json.load(arquivo)
+
+    except FileNotFoundError:
+        return []
+
+    except json.JSONDecodeError:
+        print('Erro ao ler o arquivo de dados!')
+        return []
+
+
+def salvar_equipamentos():
+    with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as arquivo:
+        json.dump(
+            equipamentos,
+            arquivo,
+            ensure_ascii=False,
+            indent=4
+        )
+
+
+equipamentos = carregar_equipamentos()
 
 while True:
     print('\n======= CONTROLE DE EQUIPAMENTOS =======')
@@ -50,6 +78,8 @@ while True:
                 novo_patrimonio,
                 novo_serial
             ])
+
+            salvar_equipamentos()
 
             print('\nEquipamento cadastrado!')
 
@@ -163,6 +193,8 @@ while True:
                         equipamento[1] = novo_patrimonio
                         equipamento[2] = novo_serial
 
+                        salvar_equipamentos()
+
                         print('\nEquipamento atualizado com sucesso!')
 
                     else:
@@ -200,6 +232,7 @@ while True:
 
                     if confirmacao == 'S':
                         equipamentos.remove(equipamento)
+                        salvar_equipamentos()
                         print('\nEquipamento removido com sucesso!')
 
                     elif confirmacao == 'N':

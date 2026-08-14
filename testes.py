@@ -84,6 +84,10 @@ def listar_equipamentos():
             print(f'Serial: {equipamentos[posicao][2]}')
 
 def pesquisar_equipamento():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento caadastrado!')
+        return
+
     patrimonio_pesquisado = input(
                 '\nDigite o patrimônio que deseja pesquisar: '
             ).strip().upper()
@@ -126,23 +130,7 @@ while True:
 
     # PESQUISAR
     elif func == 3:
-        patrimonio_pesquisado = input(
-            '\nDigite o patrimônio que deseja pesquisar: '
-        ).strip().upper()
-
-        encontrado = False
-
-        for equipamento in equipamentos:
-            if patrimonio_pesquisado == equipamento[1]:
-                print('\nEquipamento encontrado!')
-                print(f'Nome: {equipamento[0]}')
-                print(f'Patrimônio: {equipamento[1]}')
-                print(f'Serial: {equipamento[2]}')
-
-                encontrado = True
-                break
-        if not encontrado:
-            print('\nEquipamento não encontrado!')
+        pesquisar_equipamento()
 
     #EDITAR
     elif func == 4:

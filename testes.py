@@ -134,7 +134,7 @@ def editar_equipamento():
             ).strip().upper()
 
             novo_serial = input(
-                f'Novo serial [{equipamento(2)}]: '
+                f'Novo serial [{equipamento[2]}]: '
             ).strip().upper()
 
             if novo_nome == '':
@@ -193,6 +193,48 @@ def editar_equipamento():
 
     print('\nEquipamento não encontrado!')
 
+#REMOVER
+def remover_equipamentos():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    patrimonio_remover = input(
+        '\nDigite o patrimônio do equipamento: '
+    ).strip().upper()
+
+    for equipamento in equipamentos:
+        if patrimonio_remover == equipamento[1]:
+            print('\nEquipamento encontrado!')
+            print(f'Nome: {equipamento[0]}')
+            print(f'Patrimônio: {equipamento[1]}')
+            print(f'Serial: {equipamento[2]}')
+
+            confirmacao = input(
+                '\nDeseja realmente remover? [S/N]: '
+            ).strip().upper()
+
+            if confirmacao == 'S':
+                equipamentos.remove(equipamento)
+                salvar_equipamentos()
+
+                print('Equipamento removido com sucesso!')
+
+            elif confirmacao == 'N':
+                print('Remoção cancelada!')
+
+            else:
+                print('Opção inválida. Remoção cancelada!')
+
+            return
+        print('\nEquipamento não encontrado!')
+
+
+def mostrar_resumo():
+    print('\n======= RESUMO =======')
+    print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
+
+
 equipamentos = carregar_equipamentos()
 
 while True:
@@ -225,49 +267,11 @@ while True:
 
     # REMOVER
     elif func == 5:
-        if len(equipamentos) == 0:
-            print('\nNenhum equipamento cadastrado')
+        remover_equipamentos()
 
-        else:
-            patrimonio_remover = input(
-                '\nDigite o patrimônio do equipamento: '
-            ).strip().upper()
-
-            encontrado = False
-
-            for equipamento in equipamentos:
-                if patrimonio_remover == equipamento[1]:
-                    encontrado = True
-
-                    print('\nEquipamento encontrado!')
-                    print(f'Nome: {equipamento[0]} ')
-                    print(f'Patrimônio: {equipamento[1]}')
-                    print(f'Serial: {equipamento[2]}')
-
-                    confirmacao = input(
-                        '\nDeseja realmente remover? [S/N]: '
-                    ).strip().upper()
-
-                    if confirmacao == 'S':
-                        equipamentos.remove(equipamento)
-                        salvar_equipamentos()
-                        print('\nEquipamento removido com sucesso!')
-
-                    elif confirmacao == 'N':
-                        print('\nRemoção cancelada!')
-
-                    else:
-                        print('\nOpção inválida. Remoção cancelada!')
-
-                    break
-
-            if not encontrado:
-                print('\nEquipamento não encontrado!')
-            
     # RESUMO
     elif func == 6:
-        print('\n======= RESUMO =======')
-        print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
+        mostrar_resumo()
 
     # SAIR
     elif func == 0:

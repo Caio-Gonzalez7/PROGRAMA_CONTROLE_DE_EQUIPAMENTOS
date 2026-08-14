@@ -129,81 +129,81 @@ while True:
 
             encontrado = False
 
-            for equipamento in equipamentos: 
+            for equipamento in equipamentos:
                 if patrimonio_pesquisado == equipamento[1]:
                     encontrado = True
 
-                print('\nEquipamento encontrado!')
-                print(f'Nome: {equipamento[0]}')
-                print(f'Patrimônio: {equipamento[1]}')
-                print(f'Serial: {equipamento[2]}')
+                    print('\nEquipamento encontrado!')
+                    print(f'Nome: {equipamento[0]}')
+                    print(f'Patrimônio: {equipamento[1]}')
+                    print(f'Serial: {equipamento[2]}')
 
-                print('\nDeixe o campo vazio para manter o valor atual.')
+                    print('\nDeixe o campo vazio para manter o valor atual.')
 
-                novo_nome = input(
-                    f'Novo nome [{equipamento[0]}]: '
-                ).strip()
+                    novo_nome = input(
+                        f'Novo nome [{equipamento[0]}]: '
+                    ).strip()
 
-                novo_patrimonio = input(
-                    f'Novo patrimônio [{equipamento[1]}]: '
-                ).strip().upper()
-
-                novo_serial = input(
-                    f'Novo serial [{equipamento[2]}]: '
-                ).strip().upper()
-
-                if novo_nome == '':
-                    novo_nome = equipamento[0]
-
-                if novo_patrimonio == '':
-                    novo_patrimonio = equipamento[1]
-
-                if novo_serial == '':
-                    novo_serial = equipamento[2]
-
-                patrimonio_duplicado = False
-                serial_duplicado = False
-
-                for outro_equipamento in equipamentos:
-                    if outro_equipamento != equipamento:
-                        if novo_patrimonio == outro_equipamento[1]:
-                            patrimonio_duplicado = True
-
-                        if novo_serial == outro_equipamento[2]:
-                            serial_duplicado = True
-
-                if patrimonio_duplicado:
-                    print('\nEsse patrimônio já está cadastrado!')
-
-                elif serial_duplicado:
-                    print('\nEsse serial já está cadastrado!')
-
-                else:
-                    print('\n======= NOVOS DADOS =======')
-                    print(f'Nome: {novo_nome}')
-                    print(f'Patrimônio: {novo_patrimonio}')
-                    print(f'Serial: {novo_serial}')
-
-                    confirmacao = input(
-                        '\nConfirmar alteração? [S/N]: '
+                    novo_patrimonio = input(
+                        f'Novo patrimônio [{equipamento[1]}]: '
                     ).strip().upper()
-
-                    if confirmacao == 'S':
-                        equipamento[0] = novo_nome
-                        equipamento[1] = novo_patrimonio
-                        equipamento[2] = novo_serial
-
-                        salvar_equipamentos()
-
-                        print('\nEquipamento atualizado com sucesso!')
-
+    
+                    novo_serial = input(
+                        f'Novo serial [{equipamento[2]}]: '
+                    ).strip().upper()
+    
+                    if novo_nome == '':
+                        novo_nome = equipamento[0]
+    
+                    if novo_patrimonio == '':
+                        novo_patrimonio = equipamento[1]
+    
+                    if novo_serial == '':
+                        novo_serial = equipamento[2]
+    
+                    patrimonio_duplicado = False
+                    serial_duplicado = False
+    
+                    for outro_equipamento in equipamentos:
+                        if outro_equipamento != equipamento:
+                            if novo_patrimonio == outro_equipamento[1]:
+                                patrimonio_duplicado = True
+    
+                            if novo_serial == outro_equipamento[2]:
+                                serial_duplicado = True
+    
+                    if patrimonio_duplicado:
+                        print('\nEsse patrimônio já está cadastrado!')
+    
+                    elif serial_duplicado:
+                        print('\nEsse serial já está cadastrado!')
+    
                     else:
-                        print('\nAlteração cancelada!')
-
-                break
-
-        if not encontrado:
-            print('\nEquipamento não encontrado!')
+                        print('\n======= NOVOS DADOS =======')
+                        print(f'Nome: {novo_nome}')
+                        print(f'Patrimônio: {novo_patrimonio}')
+                        print(f'Serial: {novo_serial}')
+    
+                        confirmacao = input(
+                            '\nConfirmar alteração? [S/N]: '
+                        ).strip().upper()
+    
+                        if confirmacao == 'S':
+                            equipamento[0] = novo_nome
+                            equipamento[1] = novo_patrimonio
+                            equipamento[2] = novo_serial
+    
+                            salvar_equipamentos()
+    
+                            print('\nEquipamento atualizado com sucesso!')
+    
+                        else:
+                            print('\nAlteração cancelada!')
+    
+                    break
+                
+            if not encontrado:
+                print('\nEquipamento não encontrado!')
 
     # REMOVER
     elif func == 5:

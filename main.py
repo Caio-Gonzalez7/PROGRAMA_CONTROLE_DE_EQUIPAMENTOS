@@ -193,6 +193,7 @@ def editar_equipamento():
 
     print('\nEquipamento não encontrado!')
 
+#REMOVER
 def remover_equipamentos():
     if len(equipamentos) == 0:
         print('\nNenhum equipamento cadastrado!')
@@ -228,6 +229,12 @@ def remover_equipamentos():
             return
         print('\nEquipamento não encontrado!')
 
+
+def mostrar_resumo():
+    print('\n======= RESUMO =======')
+    print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
+
+
 equipamentos = carregar_equipamentos()
 
 while True:
@@ -261,11 +268,10 @@ while True:
     # REMOVER
     elif func == 5:
         remover_equipamentos()
-        
+
     # RESUMO
     elif func == 6:
-        print('\n======= RESUMO =======')
-        print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
+        mostrar_resumo()
 
     # SAIR
     elif func == 0:

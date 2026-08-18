@@ -1,4 +1,5 @@
 import json
+import csv
 
 ARQUIVO_DADOS = 'equipamentos.json'
 
@@ -49,6 +50,7 @@ def mostrar_menu():
     print('[4] Editar equipamentos')
     print('[5] Remover equipamentos')
     print('[6] Mostrar resumo')
+    print('[7] Exportar para CSV')
     print('[0] Sair')
 
 #CADASTRAR
@@ -250,6 +252,31 @@ def mostrar_resumo():
     print('\n======= RESUMO =======')
     print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
 
+def exportar_csv():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado para exportar!')
+        return
+
+    nome_arquivo = 'equipamentos.csv'
+
+    with open(
+        nome_arquivo,
+        'w',
+        newline='',
+        encoding='utf-8-sig'
+    ) as arquivo:
+        campos = ['nome', 'patrimonio', 'serial']
+
+        escritor = csv.DictWriter(
+            arquivo,
+            fieldnames=campos,
+            delimiter=';'
+        )
+
+        escritor.writeheader()
+        escritor.writerows(equipamentos)
+
+    print(f'\nEquipamentos exportados para {nome_arquivo}!')
 
 equipamentos = carregar_equipamentos()
 
@@ -288,6 +315,10 @@ while True:
     # RESUMO
     elif func == 6:
         mostrar_resumo()
+
+    #EXPORTAR
+    elif func == 7:
+        exportar_csv()
 
     # SAIR
     elif func == 0:

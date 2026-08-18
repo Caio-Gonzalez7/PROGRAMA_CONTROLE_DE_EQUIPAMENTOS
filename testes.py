@@ -6,7 +6,7 @@ ARQUIVO_DADOS = 'equipamentos.json'
 def carregar_equipamentos():
     try:
         with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as arquivo:
-            return json.load(arquivo)
+            dados = json.load(arquivo)
 
     except FileNotFoundError:
         return []
@@ -15,6 +15,22 @@ def carregar_equipamentos():
         print('Erro ao ler o arquivo de dados!')
         return []
 
+    equipamentos_convertidos = []
+
+    for equipamento in dados:
+        #Converte registros antigos que utilazavam listas
+        if isinstance(equipamento, list) and len(equipamento) >= 3:
+            equipamentos_convertidos.append({
+                'nome': equipamento[0],
+                'patrimonio': equipamento[1],
+                'serial': equipamento[2]
+            })
+
+        #Mantém registros que já utilizavam dicionários
+        elif isinstance(equipamento, dict):
+            equipamentos_convertidos.append(equipamento)
+
+    return equipamentos_convertidos
 
 def salvar_equipamentos():
     with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as arquivo:
@@ -37,7 +53,7 @@ def mostrar_menu():
 
 #CADASTRAR
 def cadastrar_equipamento():
-    novo_equipamento = input('\nEQUIPAMENTO: ').strip()
+    novo_nome = input('\nEQUIPAMENTO: ').strip()
     novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
     novo_serial = input('SERIAL: ').strip().upper()
 
@@ -45,13 +61,13 @@ def cadastrar_equipamento():
     serial_duplicado = False
 
     for equipamento in equipamentos:
-        if novo_patrimonio == equipamento[1]:
+        if novo_patrimonio == equipamento['patrimonio']:
             patrimonio_duplicado = True
 
-        if novo_serial == equipamento[2]:
+        if novo_serial == equipamento['serial']:
             serial_duplicado = True
 
-    if novo_equipamento == '' or novo_patrimonio == '' or novo_serial == '':
+    if novo_nome == '' or novo_patrimonio == '' or novo_serial == '':
         print('\nTodos os campos devem ser preenchidos!')
 
     elif patrimonio_duplicado:
@@ -61,13 +77,15 @@ def cadastrar_equipamento():
         print('\nEsse serial já está cadastrado!')
 
     else:
-        equipamentos.append([
-            novo_equipamento,
-            novo_patrimonio,
-            novo_serial
-        ])
+        novo_equipamento = {
+            'nome': novo_nome,
+            'patrimonio': novo_patrimonio,
+            'serial': novo_serial
+        }
 
+        equipamentos.append(novo_equipamento)
         salvar_equipamentos()
+        
         print('\nEquipamento cadastrado!')
 
 def listar_equipamentos():
@@ -78,10 +96,12 @@ def listar_equipamentos():
         print('\n======= EQUIPAMENTOS CADASTRADOS =======')
 
         for posicao in range(len(equipamentos)):
+            equipamento = equipamentos[posicao]
+
             print(f'\nEquipamento {posicao + 1}')
-            print(f'Nome: {equipamentos[posicao][0]}')
-            print(f'Patrimônio: {equipamentos[posicao][1]}')
-            print(f'Serial: {equipamentos[posicao][2]}')
+            print(f"Nome: {equipamento['nome']}")
+            print(f"Patrimônio: {equipamento['patrimonio']}")
+            print(f"Serial: {equipamento['serial']}")
 
 def pesquisar_equipamento():
     if len(equipamentos) == 0:
@@ -89,22 +109,18 @@ def pesquisar_equipamento():
         return
 
     patrimonio_pesquisado = input(
-                '\nDigite o patrimônio que deseja pesquisar: '
-            ).strip().upper()
-    
-    encontrado = False
+        '\nDigite o patrimônio que deseja pesquisar: '
+    ).strip().upper()
     
     for equipamento in equipamentos:
-            if patrimonio_pesquisado == equipamento[1]:
-                    print('\nEquipamento encontrado!')
-                    print(f'Nome: {equipamento[0]}')
-                    print(f'Patrimônio: {equipamento[1]}')
-                    print(f'Serial: {equipamento[2]}')
-    
-                    encontrado = True
-                    break
-            if not encontrado:
-                print('\nEquipamento não encontrado!')
+        if patrimonio_pesquisado == equipamento['patrimonio']:
+            print('\nEquipamento encontrado!')
+            print(f'Nome: {equipamento['nome']}')
+            print(f'Patrimônio: {equipamento['patrimonio']}')
+            print(f'Serial: {equipamento['serial']}')
+            return
+
+    print('\nEquipamento não encontrado!')
 
 #EDITAR
 def editar_equipamento():
@@ -117,44 +133,44 @@ def editar_equipamento():
     ).strip().upper()
 
     for equipamento in equipamentos:
-        if patrimonio_pesquisado == equipamento[1]:
+        if patrimonio_pesquisado == equipamento['patrimonio']:
             print('\nEquipamento encontrado!')
-            print(f'Nome: {equipamento[0]}')
-            print(f'Patrimônio: {equipamento[1]}')
-            print(f'Serial: {equipamento[2]}')
+            print(f"Nome: {equipamento['nome']}")
+            print(f"Patrimônio: {equipamento['patrimonio']}")
+            print(f"Serial: {equipamento['serial']}")
 
             print('\nDeixe o campo vazio para manter o valor atual.')
 
             novo_nome = input(
-                f'Novo nome [{equipamento[0]}]: '
+                f"Novo nome [{equipamento['nome']}]: "
             ).strip()
 
             novo_patrimonio = input(
-                f'Novo patrimônio [{equipamento[1]}]: '
+                f"Novo patrimônio [{equipamento['patrimonio']}]: "
             ).strip().upper()
 
             novo_serial = input(
-                f'Novo serial [{equipamento[2]}]: '
+                f"Novo serial [{equipamento['serial']}]: "
             ).strip().upper()
 
             if novo_nome == '':
-                novo_nome = equipamento[0]
+                novo_nome = equipamento['nome']
 
             if novo_patrimonio == '':
-                novo_patrimonio = equipamento[1]
+                novo_patrimonio = equipamento['patrimonio']
 
             if novo_serial == '':
-                novo_serial = equipamento[2]
+                novo_serial = equipamento['serial']
 
             patrimonio_duplicado = False
             serial_duplicado = False
 
             for outro_equipamento in equipamentos:
                 if outro_equipamento != equipamento:
-                    if novo_patrimonio == outro_equipamento[1]:
+                    if novo_patrimonio == outro_equipamento['patrimonio']:
                         patrimonio_duplicado = True
 
-                    if novo_serial == outro_equipamento[2]:
+                    if novo_serial == outro_equipamento['serial']:
                         serial_duplicado = True
 
             if patrimonio_duplicado:
@@ -175,12 +191,11 @@ def editar_equipamento():
             ).strip().upper()
 
             if confirmacao == 'S':
-                equipamento[0] = novo_nome
-                equipamento[1] = novo_patrimonio
-                equipamento[2] = novo_serial
+                equipamento['nome'] = novo_nome
+                equipamento['patrimonio'] = novo_patrimonio
+                equipamento['serial'] = novo_serial
 
                 salvar_equipamentos()
-
                 print('\nEquipamento atualizado com sucesso!')
 
             elif confirmacao == 'N':
@@ -194,7 +209,7 @@ def editar_equipamento():
     print('\nEquipamento não encontrado!')
 
 #REMOVER
-def remover_equipamentos():
+def remover_equipamento():
     if len(equipamentos) == 0:
         print('\nNenhum equipamento cadastrado!')
         return
@@ -204,11 +219,11 @@ def remover_equipamentos():
     ).strip().upper()
 
     for equipamento in equipamentos:
-        if patrimonio_remover == equipamento[1]:
+        if patrimonio_remover == equipamento['patrimonio']:
             print('\nEquipamento encontrado!')
-            print(f'Nome: {equipamento[0]}')
-            print(f'Patrimônio: {equipamento[1]}')
-            print(f'Serial: {equipamento[2]}')
+            print(f"Nome: {equipamento['nome']}")
+            print(f"Patrimônio: {equipamento['patrimonio']}")
+            print(f"Serial: {equipamento['serial']}")
 
             confirmacao = input(
                 '\nDeseja realmente remover? [S/N]: '
@@ -218,16 +233,17 @@ def remover_equipamentos():
                 equipamentos.remove(equipamento)
                 salvar_equipamentos()
 
-                print('Equipamento removido com sucesso!')
+                print('\nEquipamento removido com sucesso!')
 
             elif confirmacao == 'N':
-                print('Remoção cancelada!')
+                print('\nRemoção cancelada!')
 
             else:
-                print('Opção inválida. Remoção cancelada!')
+                print('\nOpção inválida. Remoção cancelada!')
 
             return
-        print('\nEquipamento não encontrado!')
+
+    print('\nEquipamento não encontrado!')
 
 
 def mostrar_resumo():
@@ -267,7 +283,7 @@ while True:
 
     # REMOVER
     elif func == 5:
-        remover_equipamentos()
+        remover_equipamento()
 
     # RESUMO
     elif func == 6:

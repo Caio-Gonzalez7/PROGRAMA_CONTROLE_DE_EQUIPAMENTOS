@@ -3,6 +3,12 @@ import csv
 
 ARQUIVO_DADOS = 'equipamentos.json'
 
+STATUS_VALIDOS = [
+    'Em uso',
+    'Disponível',
+    'Em manutenção',
+    'Baixado'
+]
 
 def carregar_equipamentos():
     try:
@@ -24,12 +30,18 @@ def carregar_equipamentos():
             equipamentos_convertidos.append({
                 'nome': equipamento[0],
                 'patrimonio': equipamento[1],
-                'serial': equipamento[2]
+                'serial': equipamento[2],
+                'status': 'Não informado'
             })
 
         #Mantém registros que já utilizavam dicionários
         elif isinstance(equipamento, dict):
-            equipamentos_convertidos.append(equipamento)
+            equipamentos_convertidos.append({
+                'nome': equipamento.get('nome', ''),
+                'patrimonio': equipamento.get('patrimonio', ''),
+                'serial': equipamento.get('serial', ''),
+                'status': equipamento.get('status', 'Não informado')
+            })
 
     return equipamentos_convertidos
 
@@ -58,6 +70,7 @@ def cadastrar_equipamento():
     novo_nome = input('\nEQUIPAMENTO: ').strip()
     novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
     novo_serial = input('SERIAL: ').strip().upper()
+    novo_status = escolher_status()
 
     patrimonio_duplicado = False
     serial_duplicado = False
@@ -82,7 +95,8 @@ def cadastrar_equipamento():
         novo_equipamento = {
             'nome': novo_nome,
             'patrimonio': novo_patrimonio,
-            'serial': novo_serial
+            'serial': novo_serial,
+            'status': novo_status
         }
 
         equipamentos.append(novo_equipamento)
@@ -252,6 +266,7 @@ def mostrar_resumo():
     print('\n======= RESUMO =======')
     print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
 
+
 def exportar_csv():
     if len(equipamentos) == 0:
         print('\nNenhum equipamento cadastrado para exportar!')
@@ -277,6 +292,25 @@ def exportar_csv():
         escritor.writerows(equipamentos)
 
     print(f'\nEquipamentos exportados para {nome_arquivo}!')
+
+
+def escolher_status():
+    while True:
+        print('\n======= STATUS =======')
+
+        for posicao in range(len(STATUS_VALIDOS)):
+            print(f'[{posicao + 1}] {STATUS_VALIDOS[posicao]}')
+
+        escolha = input('\nEscolha o status: ').strip()
+
+        if escolha.isnumeric():
+            posicao = int(escolha) - 1
+
+            if 0 <= posicao < len(STATUS_VALIDOS):
+                return STATUS_VALIDOS[posicao]
+
+        print('\nStatus inválido!')
+
 
 equipamentos = carregar_equipamentos()
 

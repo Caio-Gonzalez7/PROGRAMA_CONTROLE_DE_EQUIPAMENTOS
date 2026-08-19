@@ -3,6 +3,12 @@ import csv
 
 ARQUIVO_DADOS = 'equipamentos.json'
 
+STATUS_VALIDOS = [
+    'Em uso',
+    'Disponível',
+    'Em manutenção',
+    'Baixado'
+]
 
 def carregar_equipamentos():
     try:
@@ -24,12 +30,18 @@ def carregar_equipamentos():
             equipamentos_convertidos.append({
                 'nome': equipamento[0],
                 'patrimonio': equipamento[1],
-                'serial': equipamento[2]
+                'serial': equipamento[2],
+                'status': 'Não informado'
             })
 
         #Mantém registros que já utilizavam dicionários
         elif isinstance(equipamento, dict):
-            equipamentos_convertidos.append(equipamento)
+            equipamentos_convertidos.append({
+                'nome': equipamento.get('nome', ''),
+                'patrimonio': equipamento.get('patrimonio', ''),
+                'serial': equipamento.get('serial', ''),
+                'status': equipamento.get('status', 'Não informado')
+            })
 
     return equipamentos_convertidos
 
@@ -58,6 +70,7 @@ def cadastrar_equipamento():
     novo_nome = input('\nEQUIPAMENTO: ').strip()
     novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
     novo_serial = input('SERIAL: ').strip().upper()
+    novo_status = escolher_status()
 
     patrimonio_duplicado = False
     serial_duplicado = False
@@ -82,7 +95,8 @@ def cadastrar_equipamento():
         novo_equipamento = {
             'nome': novo_nome,
             'patrimonio': novo_patrimonio,
-            'serial': novo_serial
+            'serial': novo_serial,
+            'status': novo_status
         }
 
         equipamentos.append(novo_equipamento)
@@ -104,6 +118,7 @@ def listar_equipamentos():
             print(f"Nome: {equipamento['nome']}")
             print(f"Patrimônio: {equipamento['patrimonio']}")
             print(f"Serial: {equipamento['serial']}")
+            print(f"Status: {equipamento['status']}")
 
 def pesquisar_equipamento():
     if len(equipamentos) == 0:
@@ -120,6 +135,7 @@ def pesquisar_equipamento():
             print(f'Nome: {equipamento['nome']}')
             print(f'Patrimônio: {equipamento['patrimonio']}')
             print(f'Serial: {equipamento['serial']}')
+            print(f"Status: {equipamento['status']}")
             return
 
     print('\nEquipamento não encontrado!')
@@ -136,10 +152,10 @@ def editar_equipamento():
 
     for equipamento in equipamentos:
         if patrimonio_pesquisado == equipamento['patrimonio']:
-            print('\nEquipamento encontrado!')
             print(f"Nome: {equipamento['nome']}")
             print(f"Patrimônio: {equipamento['patrimonio']}")
             print(f"Serial: {equipamento['serial']}")
+            print(f"Status: {equipamento['status']}")
 
             print('\nDeixe o campo vazio para manter o valor atual.')
 
@@ -164,6 +180,8 @@ def editar_equipamento():
             if novo_serial == '':
                 novo_serial = equipamento['serial']
 
+            novo_status = escolher_status(equipamento['status'])
+
             patrimonio_duplicado = False
             serial_duplicado = False
 
@@ -187,6 +205,7 @@ def editar_equipamento():
             print(f'Nome: {novo_nome}')
             print(f'Patrimônio: {novo_patrimonio}')
             print(f'Serial: {novo_serial}')
+            print(f'Status: {novo_status}')
 
             confirmacao = input(
                 '\nConfirmar alteração? [S/N]: '
@@ -196,6 +215,7 @@ def editar_equipamento():
                 equipamento['nome'] = novo_nome
                 equipamento['patrimonio'] = novo_patrimonio
                 equipamento['serial'] = novo_serial
+                equipamento['status'] = novo_status
 
                 salvar_equipamentos()
                 print('\nEquipamento atualizado com sucesso!')
@@ -226,6 +246,7 @@ def remover_equipamento():
             print(f"Nome: {equipamento['nome']}")
             print(f"Patrimônio: {equipamento['patrimonio']}")
             print(f"Serial: {equipamento['serial']}")
+            print(f"Status: {equipamento['status']}")
 
             confirmacao = input(
                 '\nDeseja realmente remover? [S/N]: '
@@ -249,8 +270,27 @@ def remover_equipamento():
 
 
 def mostrar_resumo():
+    quantidades = {}
+
+    for status in STATUS_VALIDOS:
+        quantidades[status] = 0
+
+    quantidades['Não informado'] = 0
+
+    for equipamento in equipamentos:
+        status = equipamento.get('status', 'Não informado')
+
+        if status not in quantidades:
+            quantidades[status] = 0
+
+        quantidades[status] += 1
+
     print('\n======= RESUMO =======')
-    print(f'Total de equipamentos cadastrados: {len(equipamentos)}')
+    print(f'Total de equipamentos: {len(equipamentos)}')
+
+    for status in quantidades:
+        print(f'{status}: {quantidades[status]}')
+
 
 def exportar_csv():
     if len(equipamentos) == 0:
@@ -265,7 +305,7 @@ def exportar_csv():
         newline='',
         encoding='utf-8-sig'
     ) as arquivo:
-        campos = ['nome', 'patrimonio', 'serial']
+        campos = ['nome', 'patrimonio', 'serial', 'status']
 
         escritor = csv.DictWriter(
             arquivo,
@@ -277,6 +317,31 @@ def exportar_csv():
         escritor.writerows(equipamentos)
 
     print(f'\nEquipamentos exportados para {nome_arquivo}!')
+
+
+def escolher_status(status_atual=None):
+    while True:
+        print('\n======= STATUS =======')
+
+        for posicao in range(len(STATUS_VALIDOS)):
+            print(f'[{posicao + 1}] {STATUS_VALIDOS[posicao]}')
+
+        if status_atual is not None:
+            print(f'[0] Manter status atual: {status_atual}')
+
+        escolha = input('\nEscolha o status: ').strip()
+
+        if status_atual is not None and escolha == '0':
+            return status_atual
+
+        if escolha.isnumeric():
+            posicao = int(escolha) - 1
+
+            if 0 <= posicao < len(STATUS_VALIDOS):
+                return STATUS_VALIDOS[posicao]
+
+        print('\nStatus inválido!')
+
 
 equipamentos = carregar_equipamentos()
 

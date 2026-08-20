@@ -1,5 +1,7 @@
+from datetime import datetime
 import json
 import csv
+
 
 ARQUIVO_DADOS = 'equipamentos.json'
 
@@ -9,6 +11,10 @@ STATUS_VALIDOS = [
     'Em manutenção',
     'Baixado'
 ]
+
+def obter_data_hora():
+    return datetime.now().strftime('%d/%m/%Y %H:%M')
+
 
 def carregar_equipamentos():
     try:
@@ -51,6 +57,16 @@ def carregar_equipamentos():
                 ),
                 'status': equipamento.get('status', 'Não informado')
             })
+
+        for equipamento in equipamentos_convertidos:
+            equipamento.setdefault(
+                'data_cadastro',
+                'Não informado'
+            )
+            equipamento.setdefault(
+                'ultima_atualizacao',
+                'Não informado'
+             )
 
     return equipamentos_convertidos
 
@@ -117,6 +133,8 @@ def cadastrar_equipamento():
     # 5. Escolher o status somente após validar os dados
     novo_status = escolher_status()
 
+    data_atual = obter_data_hora()
+
     # 6. Criar o dicionário
     novo_equipamento = {
         'nome': novo_nome,
@@ -125,7 +143,9 @@ def cadastrar_equipamento():
         'categoria': nova_categoria,
         'setor': novo_setor,
         'responsavel': novo_responsavel,
-        'status': novo_status
+        'status': novo_status,
+        'data_cadastro': data_atual,
+        'ultima_atualizacao': data_atual
     }
 
     # 7. Salvar
@@ -162,6 +182,14 @@ def exibir_equipamento(equipamento):
     print(f"Setor: {equipamento['setor']}")
     print(f"Responsável: {equipamento['responsavel']}")
     print(f"Status: {equipamento['status']}")
+    print(
+        f"Data de cadastro: "
+        f"{equipamento.get('data_cadastro', 'Não informado')}"
+    )
+    print(
+        f"Última atualização: "
+        f"{equipamento.get('ultima_atualizacao', 'Não informado')}"
+    )
 
 
 def pesquisar_equipamento():
@@ -351,6 +379,7 @@ def editar_equipamento():
                 equipamento['setor'] = novo_setor
                 equipamento['responsavel'] = novo_responsavel
                 equipamento['status'] = novo_status
+                equipamento['ultima_atualizacao'] = obter_data_hora()
 
                 salvar_equipamentos()
                 print('\nEquipamento atualizado com sucesso!')

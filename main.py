@@ -1,6 +1,8 @@
 from datetime import datetime
-import json
+from pathlib import Path
 import csv
+import json
+import shutil
 
 
 ARQUIVO_DADOS = 'equipamentos.json'
@@ -11,6 +13,7 @@ STATUS_VALIDOS = [
     'Em manutenção',
     'Baixado'
 ]
+
 
 def obter_data_hora():
     return datetime.now().strftime('%d/%m/%Y %H:%M')
@@ -25,481 +28,113 @@ def carregar_equipamentos():
         return []
 
     except json.JSONDecodeError:
-        print('Erro ao ler o arquivo de dados!')
+        print('\nErro ao ler o arquivo de dados!')
+        return []
+
+    if not isinstance(dados, list):
+        print('\nFormato inválido no arquivo de dados!')
         return []
 
     equipamentos_convertidos = []
 
     for equipamento in dados:
-        #Converte registros antigos que utilazavam listas
+        # Converte registros antigos que utilizavam listas.
         if isinstance(equipamento, list) and len(equipamento) >= 3:
-            equipamentos_convertidos.append({
+            equipamento_convertido = {
                 'nome': equipamento[0],
                 'patrimonio': equipamento[1],
                 'serial': equipamento[2],
                 'categoria': 'Não informado',
                 'setor': 'Não informado',
                 'responsavel': 'Não informado',
-                'status': 'Não informado'
-            })
+                'status': 'Não informado',
+                'data_cadastro': 'Não informado',
+                'ultima_atualizacao': 'Não informado'
+            }
 
-        #Mantém registros que já utilizavam dicionários
+        # Mantém e completa registros que já utilizam dicionários.
         elif isinstance(equipamento, dict):
-            equipamentos_convertidos.append({
+            equipamento_convertido = {
                 'nome': equipamento.get('nome', ''),
                 'patrimonio': equipamento.get('patrimonio', ''),
                 'serial': equipamento.get('serial', ''),
-                'categoria': equipamento.get('categoria', 'Não informado'),
+                'categoria': equipamento.get(
+                    'categoria',
+                    'Não informado'
+                ),
                 'setor': equipamento.get('setor', 'Não informado'),
                 'responsavel': equipamento.get(
                     'responsavel',
                     'Não informado'
                 ),
-                'status': equipamento.get('status', 'Não informado')
-            })
+                'status': equipamento.get('status', 'Não informado'),
+                'data_cadastro': equipamento.get(
+                    'data_cadastro',
+                    'Não informado'
+                ),
+                'ultima_atualizacao': equipamento.get(
+                    'ultima_atualizacao',
+                    'Não informado'
+                )
+            }
 
-        for equipamento in equipamentos_convertidos:
-            equipamento.setdefault(
-                'data_cadastro',
-                'Não informado'
-            )
-            equipamento.setdefault(
-                'ultima_atualizacao',
-                'Não informado'
-             )
+        else:
+            continue
+
+        equipamentos_convertidos.append(equipamento_convertido)
 
     return equipamentos_convertidos
 
+
 def salvar_equipamentos():
-    with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as arquivo:
-        json.dump(
-            equipamentos,
-            arquivo,
-            ensure_ascii=False,
-            indent=4
-        )
-#MENU
+    try:
+        with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as arquivo:
+            json.dump(
+                equipamentos,
+                arquivo,
+                ensure_ascii=False,
+                indent=4
+            )
+
+    except OSError as erro:
+        print(f'\nNão foi possível salvar os dados: {erro}')
+        return False
+
+    return True
+
+
+def criar_backup():
+    caminho_dados = Path(ARQUIVO_DADOS)
+
+    if not caminho_dados.exists():
+        return
+
+    caminho_backup = caminho_dados.with_name('equipamentos_backup.json')
+
+    try:
+        shutil.copy2(caminho_dados, caminho_backup)
+    except OSError as erro:
+        print(f'\nAviso: não foi possível criar o backup: {erro}')
+
+
 def mostrar_menu():
     print('\n======= CONTROLE DE EQUIPAMENTOS =======')
-    print('[1] Cadastrar equipamentos')
+    print('[1] Cadastrar equipamento')
     print('[2] Listar equipamentos')
     print('[3] Pesquisar equipamentos')
-    print('[4] Editar equipamentos')
-    print('[5] Remover equipamentos')
+    print('[4] Editar equipamento')
+    print('[5] Remover equipamento')
     print('[6] Mostrar resumo')
     print('[7] Exportar para CSV')
     print('[0] Sair')
-
-#CADASTRAR
-def cadastrar_equipamento():
-    # 1. Receber os dados
-    novo_nome = input('\nEQUIPAMENTO: ').strip()
-    novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
-    novo_serial = input('SERIAL: ').strip().upper()
-    nova_categoria = input('CATEGORIA: ').strip()
-    novo_setor = input('SETOR (opcional): ').strip()
-    novo_responsavel = input('RESPONSÁVEL (opcional): ').strip()
-
-    # 2. Preencher os campos opcionais
-    if novo_setor == '':
-        novo_setor = 'Não informado'
-
-    if novo_responsavel == '':
-        novo_responsavel = 'Não informado'
-
-    # 3. Validar os campos obrigatórios
-    if (
-        novo_nome == ''
-        or novo_patrimonio == ''
-        or novo_serial == ''
-        or nova_categoria == ''
-    ):
-        print(
-            '\nNome, patrimônio, serial e categoria '
-            'são obrigatórios!'
-        )
-        return
-
-    # 4. Verificar duplicidades
-    for equipamento in equipamentos:
-        if novo_patrimonio == equipamento['patrimonio']:
-            print('\nEsse patrimônio já está cadastrado!')
-            return
-
-        if novo_serial == equipamento['serial']:
-            print('\nEsse serial já está cadastrado!')
-            return
-
-    # 5. Escolher o status somente após validar os dados
-    novo_status = escolher_status()
-
-    data_atual = obter_data_hora()
-
-    # 6. Criar o dicionário
-    novo_equipamento = {
-        'nome': novo_nome,
-        'patrimonio': novo_patrimonio,
-        'serial': novo_serial,
-        'categoria': nova_categoria,
-        'setor': novo_setor,
-        'responsavel': novo_responsavel,
-        'status': novo_status,
-        'data_cadastro': data_atual,
-        'ultima_atualizacao': data_atual
-    }
-
-    # 7. Salvar
-    equipamentos.append(novo_equipamento)
-    salvar_equipamentos()
-
-    print('\nEquipamento cadastrado!')
-
-def listar_equipamentos():
-    if len(equipamentos) == 0:
-        print('\nNenhum equipamento cadastrado!')
-
-    else:
-        print('\n======= EQUIPAMENTOS CADASTRADOS =======')
-
-        for posicao in range(len(equipamentos)):
-            equipamento = equipamentos[posicao]
-
-            print(f'\nEquipamento {posicao + 1}')
-            print(f"Nome: {equipamento['nome']}")
-            print(f"Patrimônio: {equipamento['patrimonio']}")
-            print(f"Serial: {equipamento['serial']}")
-            print(f"Categoria: {equipamento['categoria']}")
-            print(f"Setor: {equipamento['setor']}")
-            print(f"Responsável: {equipamento['responsavel']}")
-            print(f"Status: {equipamento['status']}")
-
-
-def exibir_equipamento(equipamento):
-    print(f"Nome: {equipamento['nome']}")
-    print(f"Patrimônio: {equipamento['patrimonio']}")
-    print(f"Serial: {equipamento['serial']}")
-    print(f"Categoria: {equipamento['categoria']}")
-    print(f"Setor: {equipamento['setor']}")
-    print(f"Responsável: {equipamento['responsavel']}")
-    print(f"Status: {equipamento['status']}")
-    print(
-        f"Data de cadastro: "
-        f"{equipamento.get('data_cadastro', 'Não informado')}"
-    )
-    print(
-        f"Última atualização: "
-        f"{equipamento.get('ultima_atualizacao', 'Não informado')}"
-    )
-
-
-def pesquisar_equipamento():
-    if len(equipamentos) == 0:
-        print('\nNenhum equipamento cadastrado!')
-        return
-
-    print('\n======= PESQUISAR POR =======')
-    print('[1] Patrimônio')
-    print('[2] Serial')
-    print('[3] Nome')
-    print('[4] Categoria')
-    print('[5] Setor')
-    print('[6] Responsável')
-    print('[0] Voltar')
-
-    opcao = input('\nESCOLHA: ').strip()
-
-    pesquisa_exata = False
-
-    if opcao == '1':
-        campo = 'patrimonio'
-        termo = input('\nDigite o patrimônio: ').strip().upper()
-        pesquisa_exata = True
-
-    elif opcao == '2':
-        campo = 'serial'
-        termo = input('\nDigite o serial: ').strip().upper()
-        pesquisa_exata = True
-
-    elif opcao == '3':
-        campo = 'nome'
-        termo = input('\nDigite o nome: ').strip().lower()
-
-    elif opcao == '4':
-        campo = 'categoria'
-        termo = input('\nDigite a categoria: ').strip().lower()
-
-    elif opcao == '5':
-        campo = 'setor'
-        termo = input('\nDigite o setor: ').strip().lower()
-
-    elif opcao == '6':
-        campo = 'responsavel'
-        termo = input('\nDigite o responsável: ').strip().lower()
-
-    elif opcao == '0':
-        return
-
-    else:
-        print('\nOpção inválida!')
-        return
-
-    if termo == '':
-        print('\nA pesquisa não pode ficar vazia!')
-        return
-
-    encontrados = []
-
-    for equipamento in equipamentos:
-        valor = equipamento.get(campo, '')
-
-        if pesquisa_exata:
-            if termo == valor.upper():
-                encontrados.append(equipamento)
-
-        else:
-            if termo in valor.lower():
-                encontrados.append(equipamento)
-
-    if len(encontrados) == 0:
-        print('\nNenhum equipamento encontrado!')
-        return
-
-    print(
-        f'\n======= {len(encontrados)} '
-        f'EQUIPAMENTO(S) ENCONTRADO(S) ======='
-    )
-
-    for posicao in range(len(encontrados)):
-        print(f'\nResultado {posicao + 1}')
-        exibir_equipamento(encontrados[posicao])
-
-#EDITAR
-def editar_equipamento():
-    if len(equipamentos) == 0:
-        print('\nNenhum equipamento cadastrado!')
-        return
-
-    patrimonio_pesquisado = input(
-        '\nDigite o patrimônio do equipamento: '
-    ).strip().upper()
-
-    for equipamento in equipamentos:
-        if patrimonio_pesquisado == equipamento['patrimonio']:
-            print('\nEquipamento encontrado!')
-            print(f"Nome: {equipamento['nome']}")
-            print(f"Patrimônio: {equipamento['patrimonio']}")
-            print(f"Serial: {equipamento['serial']}")
-            print(f"Categoria: {equipamento['categoria']}")
-            print(f"Setor: {equipamento['setor']}")
-            print(f"Responsável: {equipamento['responsavel']}")
-            print(f"Status: {equipamento['status']}")
-
-            print('\nDeixe o campo vazio para manter o valor atual.')
-
-            novo_nome = input(
-                f"Novo nome [{equipamento['nome']}]: "
-            ).strip()
-
-            novo_patrimonio = input(
-                f"Novo patrimônio [{equipamento['patrimonio']}]: "
-            ).strip().upper()
-
-            novo_serial = input(
-                f"Novo serial [{equipamento['serial']}]: "
-            ).strip().upper()
-
-            nova_categoria = input(
-                f"Nova categoria [{equipamento['categoria']}]: "
-            ).strip()
-
-            novo_setor = input(
-                f"Novo setor [{equipamento['setor']}]: "
-            ).strip()
-
-            novo_responsavel = input(
-                f"Novo responsável [{equipamento['responsavel']}]: "
-            ).strip()
-
-            if novo_nome == '':
-                novo_nome = equipamento['nome']
-
-            if novo_patrimonio == '':
-                novo_patrimonio = equipamento['patrimonio']
-
-            if novo_serial == '':
-                novo_serial = equipamento['serial']
-
-            if nova_categoria == '':
-                nova_categoria = equipamento['categoria']
-
-            if novo_setor == '':
-                novo_setor = equipamento['setor']
-
-            if novo_responsavel == '':
-                novo_responsavel = equipamento['responsavel']
-
-            # Verificar duplicidades em outros equipamentos
-            for outro_equipamento in equipamentos:
-                if outro_equipamento != equipamento:
-                    if (
-                        novo_patrimonio
-                        == outro_equipamento['patrimonio']
-                    ):
-                        print(
-                            '\nEsse patrimônio já está cadastrado!'
-                        )
-                        return
-
-                    if novo_serial == outro_equipamento['serial']:
-                        print('\nEsse serial já está cadastrado!')
-                        return
-
-            novo_status = escolher_status(
-                equipamento['status']
-            )
-
-            print('\n======= NOVOS DADOS =======')
-            print(f'Nome: {novo_nome}')
-            print(f'Patrimônio: {novo_patrimonio}')
-            print(f'Serial: {novo_serial}')
-            print(f'Categoria: {nova_categoria}')
-            print(f'Setor: {novo_setor}')
-            print(f'Responsável: {novo_responsavel}')
-            print(f'Status: {novo_status}')
-
-            confirmacao = input(
-                '\nConfirmar alteração? [S/N]: '
-            ).strip().upper()
-
-            if confirmacao == 'S':
-                equipamento['nome'] = novo_nome
-                equipamento['patrimonio'] = novo_patrimonio
-                equipamento['serial'] = novo_serial
-                equipamento['categoria'] = nova_categoria
-                equipamento['setor'] = novo_setor
-                equipamento['responsavel'] = novo_responsavel
-                equipamento['status'] = novo_status
-                equipamento['ultima_atualizacao'] = obter_data_hora()
-
-                salvar_equipamentos()
-                print('\nEquipamento atualizado com sucesso!')
-
-            elif confirmacao == 'N':
-                print('\nAlteração cancelada!')
-
-            else:
-                print('\nOpção inválida. Alteração cancelada!')
-
-            return
-
-    print('\nEquipamento não encontrado!')
-
-#REMOVER
-def remover_equipamento():
-    if len(equipamentos) == 0:
-        print('\nNenhum equipamento cadastrado!')
-        return
-
-    patrimonio_remover = input(
-        '\nDigite o patrimônio do equipamento: '
-    ).strip().upper()
-
-    for equipamento in equipamentos:
-        if patrimonio_remover == equipamento['patrimonio']:
-            print('\nEquipamento encontrado!')
-            print(f"Nome: {equipamento['nome']}")
-            print(f"Patrimônio: {equipamento['patrimonio']}")
-            print(f"Serial: {equipamento['serial']}")
-            print(f"Categoria: {equipamento['categoria']}")
-            print(f"Setor: {equipamento['setor']}")
-            print(f"Responsável: {equipamento['responsavel']}")
-            print(f"Status: {equipamento['status']}")
-
-            confirmacao = input(
-                '\nDeseja realmente remover? [S/N]: '
-            ).strip().upper()
-
-            if confirmacao == 'S':
-                equipamentos.remove(equipamento)
-                salvar_equipamentos()
-
-                print('\nEquipamento removido com sucesso!')
-
-            elif confirmacao == 'N':
-                print('\nRemoção cancelada!')
-
-            else:
-                print('\nOpção inválida. Remoção cancelada!')
-
-            return
-
-    print('\nEquipamento não encontrado!')
-
-
-def mostrar_resumo():
-    quantidades = {}
-
-    for status in STATUS_VALIDOS:
-        quantidades[status] = 0
-
-    quantidades['Não informado'] = 0
-
-    for equipamento in equipamentos:
-        status = equipamento.get('status', 'Não informado')
-
-        if status not in quantidades:
-            quantidades[status] = 0
-
-        quantidades[status] += 1
-
-    print('\n======= RESUMO =======')
-    print(f'Total de equipamentos: {len(equipamentos)}')
-
-    for status in quantidades:
-        print(f'{status}: {quantidades[status]}')
-
-
-def exportar_csv():
-    if len(equipamentos) == 0:
-        print('\nNenhum equipamento cadastrado para exportar!')
-        return
-
-    nome_arquivo = 'equipamentos.csv'
-
-    with open(
-        nome_arquivo,
-        'w',
-        newline='',
-        encoding='utf-8-sig'
-    ) as arquivo:
-        campos = [
-            'nome',
-            'patrimonio',
-            'serial',
-            'categoria',
-            'setor',
-            'responsavel',
-            'status'
-                ]
-
-        escritor = csv.DictWriter(
-            arquivo,
-            fieldnames=campos,
-            delimiter=';'
-        )
-
-        escritor.writeheader()
-        escritor.writerows(equipamentos)
-
-    print(f'\nEquipamentos exportados para {nome_arquivo}!')
 
 
 def escolher_status(status_atual=None):
     while True:
         print('\n======= STATUS =======')
 
-        for posicao in range(len(STATUS_VALIDOS)):
-            print(f'[{posicao + 1}] {STATUS_VALIDOS[posicao]}')
+        for posicao, status in enumerate(STATUS_VALIDOS, start=1):
+            print(f'[{posicao}] {status}')
 
         if status_atual is not None:
             print(f'[0] Manter status atual: {status_atual}')
@@ -518,56 +153,416 @@ def escolher_status(status_atual=None):
         print('\nStatus inválido!')
 
 
-equipamentos = carregar_equipamentos()
+def exibir_equipamento(equipamento):
+    print(f"Nome: {equipamento.get('nome', '')}")
+    print(f"Patrimônio: {equipamento.get('patrimonio', '')}")
+    print(f"Serial: {equipamento.get('serial', '')}")
+    print(
+        f"Categoria: "
+        f"{equipamento.get('categoria', 'Não informado')}"
+    )
+    print(f"Setor: {equipamento.get('setor', 'Não informado')}")
+    print(
+        f"Responsável: "
+        f"{equipamento.get('responsavel', 'Não informado')}"
+    )
+    print(f"Status: {equipamento.get('status', 'Não informado')}")
+    print(
+        f"Data de cadastro: "
+        f"{equipamento.get('data_cadastro', 'Não informado')}"
+    )
+    print(
+        f"Última atualização: "
+        f"{equipamento.get('ultima_atualizacao', 'Não informado')}"
+    )
 
-while True:
-    mostrar_menu()
 
-    escolha = input('\nESCOLHA: ')
+def cadastrar_equipamento():
+    novo_nome = input('\nEQUIPAMENTO: ').strip()
+    novo_patrimonio = input('PATRIMÔNIO: ').strip().upper()
+    novo_serial = input('SERIAL: ').strip().upper()
+    nova_categoria = input('CATEGORIA: ').strip()
+    novo_setor = input('SETOR (opcional): ').strip()
+    novo_responsavel = input('RESPONSÁVEL (opcional): ').strip()
 
-    # Impede que o programa quebre caso seja digitada uma letra
-    if not escolha.isnumeric():
-        print('\nDigite apenas números!')
-        continue
+    if novo_setor == '':
+        novo_setor = 'Não informado'
 
-    func = int(escolha)
+    if novo_responsavel == '':
+        novo_responsavel = 'Não informado'
 
-    # CADASTRAR
-    if func == 1:
-        cadastrar_equipamento()
+    if (
+        novo_nome == ''
+        or novo_patrimonio == ''
+        or novo_serial == ''
+        or nova_categoria == ''
+    ):
+        print(
+            '\nNome, patrimônio, serial e categoria '
+            'são obrigatórios!'
+        )
+        return
 
-    # LISTAR
-    elif func == 2:
-        listar_equipamentos()
+    for equipamento in equipamentos:
+        if novo_patrimonio == equipamento['patrimonio']:
+            print('\nEsse patrimônio já está cadastrado!')
+            return
 
-    # PESQUISAR
-    elif func == 3:
-        pesquisar_equipamento()
+        if novo_serial == equipamento['serial']:
+            print('\nEsse serial já está cadastrado!')
+            return
 
-    #EDITAR
-    elif func == 4:
-        editar_equipamento()
+    novo_status = escolher_status()
+    data_atual = obter_data_hora()
 
-    # REMOVER
-    elif func == 5:
-        remover_equipamento()
+    novo_equipamento = {
+        'nome': novo_nome,
+        'patrimonio': novo_patrimonio,
+        'serial': novo_serial,
+        'categoria': nova_categoria,
+        'setor': novo_setor,
+        'responsavel': novo_responsavel,
+        'status': novo_status,
+        'data_cadastro': data_atual,
+        'ultima_atualizacao': data_atual
+    }
 
-    # RESUMO
-    elif func == 6:
-        mostrar_resumo()
+    equipamentos.append(novo_equipamento)
 
-    #EXPORTAR
-    elif func == 7:
-        exportar_csv()
+    if salvar_equipamentos():
+        print('\nEquipamento cadastrado!')
 
-    # SAIR
-    elif func == 0:
-        print('\nPrograma finalizado!')
-        break
 
-    # OPÇÃO INEXISTENTE
+def listar_equipamentos():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    print('\n======= ORDENAR LISTAGEM POR =======')
+    print('[1] Nome')
+    print('[2] Patrimônio')
+    print('[3] Categoria')
+    print('[4] Status')
+    print('[0] Ordem de cadastro')
+
+    opcao = input('\nESCOLHA: ').strip()
+
+    campos_ordenacao = {
+        '1': 'nome',
+        '2': 'patrimonio',
+        '3': 'categoria',
+        '4': 'status'
+    }
+
+    if opcao == '0':
+        equipamentos_ordenados = equipamentos.copy()
+
+    elif opcao in campos_ordenacao:
+        campo = campos_ordenacao[opcao]
+        equipamentos_ordenados = sorted(
+            equipamentos,
+            key=lambda equipamento: equipamento.get(campo, '').lower()
+        )
+
     else:
         print('\nOpção inválida!')
+        return
+
+    print('\n======= EQUIPAMENTOS CADASTRADOS =======')
+
+    for posicao, equipamento in enumerate(
+        equipamentos_ordenados,
+        start=1
+    ):
+        print(f'\nEquipamento {posicao}')
+        exibir_equipamento(equipamento)
+
+
+def pesquisar_equipamento():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    print('\n======= PESQUISAR POR =======')
+    print('[1] Patrimônio')
+    print('[2] Serial')
+    print('[3] Nome')
+    print('[4] Categoria')
+    print('[5] Setor')
+    print('[6] Responsável')
+    print('[7] Status')
+    print('[0] Voltar')
+
+    opcao = input('\nESCOLHA: ').strip()
+
+    campos_pesquisa = {
+        '1': ('patrimonio', 'Digite o patrimônio: ', True),
+        '2': ('serial', 'Digite o serial: ', True),
+        '3': ('nome', 'Digite o nome: ', False),
+        '4': ('categoria', 'Digite a categoria: ', False),
+        '5': ('setor', 'Digite o setor: ', False),
+        '6': ('responsavel', 'Digite o responsável: ', False),
+        '7': ('status', 'Digite o status: ', False)
+    }
+
+    if opcao == '0':
+        return
+
+    if opcao not in campos_pesquisa:
+        print('\nOpção inválida!')
+        return
+
+    campo, mensagem, pesquisa_exata = campos_pesquisa[opcao]
+    termo = input(f'\n{mensagem}').strip()
+
+    if termo == '':
+        print('\nA pesquisa não pode ficar vazia!')
+        return
+
+    encontrados = []
+
+    for equipamento in equipamentos:
+        valor = str(equipamento.get(campo, ''))
+
+        if pesquisa_exata:
+            corresponde = termo.upper() == valor.upper()
+        else:
+            corresponde = termo.lower() in valor.lower()
+
+        if corresponde:
+            encontrados.append(equipamento)
+
+    if len(encontrados) == 0:
+        print('\nNenhum equipamento encontrado!')
+        return
+
+    print(
+        f'\n======= {len(encontrados)} '
+        f'EQUIPAMENTO(S) ENCONTRADO(S) ======='
+    )
+
+    for posicao, equipamento in enumerate(encontrados, start=1):
+        print(f'\nResultado {posicao}')
+        exibir_equipamento(equipamento)
+
+
+def editar_equipamento():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    patrimonio_pesquisado = input(
+        '\nDigite o patrimônio do equipamento: '
+    ).strip().upper()
+
+    for equipamento in equipamentos:
+        if patrimonio_pesquisado != equipamento['patrimonio']:
+            continue
+
+        print('\nEquipamento encontrado!')
+        exibir_equipamento(equipamento)
+        print('\nDeixe o campo vazio para manter o valor atual.')
+
+        novo_nome = input(
+            f"Novo nome [{equipamento['nome']}]: "
+        ).strip()
+        novo_patrimonio = input(
+            f"Novo patrimônio [{equipamento['patrimonio']}]: "
+        ).strip().upper()
+        novo_serial = input(
+            f"Novo serial [{equipamento['serial']}]: "
+        ).strip().upper()
+        nova_categoria = input(
+            f"Nova categoria [{equipamento['categoria']}]: "
+        ).strip()
+        novo_setor = input(
+            f"Novo setor [{equipamento['setor']}]: "
+        ).strip()
+        novo_responsavel = input(
+            f"Novo responsável [{equipamento['responsavel']}]: "
+        ).strip()
+
+        novo_nome = novo_nome or equipamento['nome']
+        novo_patrimonio = novo_patrimonio or equipamento['patrimonio']
+        novo_serial = novo_serial or equipamento['serial']
+        nova_categoria = nova_categoria or equipamento['categoria']
+        novo_setor = novo_setor or equipamento['setor']
+        novo_responsavel = (
+            novo_responsavel or equipamento['responsavel']
+        )
+
+        for outro_equipamento in equipamentos:
+            if outro_equipamento is equipamento:
+                continue
+
+            if novo_patrimonio == outro_equipamento['patrimonio']:
+                print('\nEsse patrimônio já está cadastrado!')
+                return
+
+            if novo_serial == outro_equipamento['serial']:
+                print('\nEsse serial já está cadastrado!')
+                return
+
+        novo_status = escolher_status(equipamento['status'])
+
+        print('\n======= NOVOS DADOS =======')
+        print(f'Nome: {novo_nome}')
+        print(f'Patrimônio: {novo_patrimonio}')
+        print(f'Serial: {novo_serial}')
+        print(f'Categoria: {nova_categoria}')
+        print(f'Setor: {novo_setor}')
+        print(f'Responsável: {novo_responsavel}')
+        print(f'Status: {novo_status}')
+
+        confirmacao = input(
+            '\nConfirmar alteração? [S/N]: '
+        ).strip().upper()
+
+        if confirmacao == 'S':
+            criar_backup()
+
+            equipamento.update({
+                'nome': novo_nome,
+                'patrimonio': novo_patrimonio,
+                'serial': novo_serial,
+                'categoria': nova_categoria,
+                'setor': novo_setor,
+                'responsavel': novo_responsavel,
+                'status': novo_status,
+                'ultima_atualizacao': obter_data_hora()
+            })
+
+            if salvar_equipamentos():
+                print('\nEquipamento atualizado com sucesso!')
+
+        elif confirmacao == 'N':
+            print('\nAlteração cancelada!')
+
+        else:
+            print('\nOpção inválida. Alteração cancelada!')
+
+        return
+
+    print('\nEquipamento não encontrado!')
+
+
+def remover_equipamento():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    patrimonio_remover = input(
+        '\nDigite o patrimônio do equipamento: '
+    ).strip().upper()
+
+    for equipamento in equipamentos:
+        if patrimonio_remover != equipamento['patrimonio']:
+            continue
+
+        print('\nEquipamento encontrado!')
+        exibir_equipamento(equipamento)
+
+        confirmacao = input(
+            '\nDeseja realmente remover? [S/N]: '
+        ).strip().upper()
+
+        if confirmacao == 'S':
+            criar_backup()
+            equipamentos.remove(equipamento)
+
+            if salvar_equipamentos():
+                print('\nEquipamento removido com sucesso!')
+
+        elif confirmacao == 'N':
+            print('\nRemoção cancelada!')
+
+        else:
+            print('\nOpção inválida. Remoção cancelada!')
+
+        return
+
+    print('\nEquipamento não encontrado!')
+
+
+def mostrar_resumo():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado!')
+        return
+
+    quantidades_status = {}
+    quantidades_categoria = {}
+
+    for status in STATUS_VALIDOS:
+        quantidades_status[status] = 0
+
+    for equipamento in equipamentos:
+        status = equipamento.get('status', 'Não informado')
+        categoria = equipamento.get('categoria', 'Não informado')
+
+        quantidades_status[status] = quantidades_status.get(status, 0) + 1
+        quantidades_categoria[categoria] = (
+            quantidades_categoria.get(categoria, 0) + 1
+        )
+
+    print('\n======= RESUMO =======')
+    print(f'Total de equipamentos: {len(equipamentos)}')
+
+    print('\nPor status:')
+    for status, quantidade in quantidades_status.items():
+        print(f'- {status}: {quantidade}')
+
+    print('\nPor categoria:')
+    for categoria in sorted(quantidades_categoria, key=str.lower):
+        print(f'- {categoria}: {quantidades_categoria[categoria]}')
+
+
+def exportar_csv():
+    if len(equipamentos) == 0:
+        print('\nNenhum equipamento cadastrado para exportar!')
+        return
+
+    nome_arquivo = 'equipamentos.csv'
+    campos = [
+        'nome',
+        'patrimonio',
+        'serial',
+        'categoria',
+        'setor',
+        'responsavel',
+        'status',
+        'data_cadastro',
+        'ultima_atualizacao'
+    ]
+
+    try:
+        with open(
+            nome_arquivo,
+            'w',
+            newline='',
+            encoding='utf-8-sig'
+        ) as arquivo:
+            escritor = csv.DictWriter(
+                arquivo,
+                fieldnames=campos,
+                delimiter=';',
+                extrasaction='ignore'
+            )
+
+            escritor.writeheader()
+
+            for equipamento in equipamentos:
+                linha = {
+                    campo: equipamento.get(campo, 'Não informado')
+                    for campo in campos
+                }
+                escritor.writerow(linha)
+
+    except OSError as erro:
+        print(f'\nNão foi possível exportar o CSV: {erro}')
+        return
+
+    print(f'\nEquipamentos exportados para {nome_arquivo}!')
+
 
 equipamentos = carregar_equipamentos()
 
@@ -575,8 +570,7 @@ equipamentos = carregar_equipamentos()
 def executar_programa():
     while True:
         mostrar_menu()
-
-        escolha = input('\nESCOLHA: ')
+        escolha = input('\nESCOLHA: ').strip()
 
         if not escolha.isnumeric():
             print('\nDigite apenas números!')
@@ -586,29 +580,21 @@ def executar_programa():
 
         if func == 1:
             cadastrar_equipamento()
-
         elif func == 2:
             listar_equipamentos()
-
         elif func == 3:
             pesquisar_equipamento()
-
         elif func == 4:
             editar_equipamento()
-
         elif func == 5:
             remover_equipamento()
-
         elif func == 6:
             mostrar_resumo()
-
         elif func == 7:
             exportar_csv()
-
         elif func == 0:
             print('\nPrograma finalizado!')
             break
-
         else:
             print('\nOpção inválida!')
 

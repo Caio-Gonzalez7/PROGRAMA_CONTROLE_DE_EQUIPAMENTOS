@@ -1,5 +1,7 @@
 from datetime import datetime
 from pathlib import Path
+import sqlite3
+import banco
 import csv
 import json
 import shutil
@@ -19,7 +21,7 @@ def obter_data_hora():
     return datetime.now().strftime('%d/%m/%Y %H:%M')
 
 
-def carregar_equipamentos():
+def carregar_equipamentos_json():
     try:
         with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as arquivo:
             dados = json.load(arquivo)
@@ -84,6 +86,38 @@ def carregar_equipamentos():
         equipamentos_convertidos.append(equipamento_convertido)
 
     return equipamentos_convertidos
+
+
+def iniciar_banco():
+    banco_novo = not Path(banco.ARQUIVO_BANCO).exists()
+
+    banco.criar_tabela()
+
+    if banco_novo:
+        equipamentos_antigos = (
+            carregar_equipamentos_json()
+        )
+
+        quantidade_importada = 0
+
+        for equipamento in equipamentos_antigos:
+            try:
+                banco.inserir_equipamento(equipamento)
+                quantidade_importada += 1
+
+            except sqlite3.IntegrityError:
+                print(
+                    '\nUm equipamento duplicado não foi importado: '
+                    f"{equipamento['patrimonio']}"
+                )
+
+        if quantidade_importada > 0:
+            print(
+                f'\n{quantidade_importada} equipamento(s) '
+                'importado(s) do JSON para o SQLite!'
+            )
+
+    return banco.listar_equipamentos()
 
 
 def salvar_equipamentos():
@@ -227,10 +261,25 @@ def cadastrar_equipamento():
         'ultima_atualizacao': data_atual
     }
 
+    try:
+        novo_id = banco.inserir_equipamento(
+        novo_equipamento
+        )
+
+    except sqlite3.IntegrityError:
+        print(
+        '\nNão foi possível cadastrar. '
+        'O patrimônio ou serial já existe!'
+        )
+        return
+
+    novo_equipamento['id'] = novo_id
     equipamentos.append(novo_equipamento)
 
-    if salvar_equipamentos():
-        print('\nEquipamento cadastrado!')
+    print(
+        f'\nEquipamento cadastrado com sucesso! '
+        f'ID: {novo_id}'
+        )
 
 
 def listar_equipamentos():
@@ -564,7 +613,7 @@ def exportar_csv():
     print(f'\nEquipamentos exportados para {nome_arquivo}!')
 
 
-equipamentos = carregar_equipamentos()
+equipamentos = iniciar_banco()
 
 
 def executar_programa():

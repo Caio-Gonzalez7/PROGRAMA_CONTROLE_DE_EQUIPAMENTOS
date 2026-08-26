@@ -29,6 +29,15 @@ def criar_tabela():
             '''
         )
 
+        conexao.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS configuracoes (
+                chave TEXT PRIMARY KEY,
+                valor TEXT NOT NULL
+            )
+            '''
+        )
+
 
 def inserir_equipamento(equipamento):
     with conectar() as conexao:
@@ -73,10 +82,7 @@ def listar_equipamentos():
             '''
         ).fetchall()
 
-    return [
-        dict(equipamento)
-        for equipamento in resultados
-    ]
+    return [dict(equipamento) for equipamento in resultados]
 
 
 def atualizar_equipamento(equipamento):
@@ -124,3 +130,26 @@ def remover_equipamento(equipamento_id):
         )
 
     return cursor.rowcount > 0
+
+
+def migracao_json_concluida():
+    with conectar() as conexao:
+        resultado = conexao.execute(
+            '''
+            SELECT valor
+            FROM configuracoes
+            WHERE chave = 'json_migrado'
+            '''
+        ).fetchone()
+
+    return resultado is not None and resultado['valor'] == 'sim'
+
+
+def marcar_migracao_json():
+    with conectar() as conexao:
+        conexao.execute(
+            '''
+            INSERT OR REPLACE INTO configuracoes (chave, valor)
+            VALUES ('json_migrado', 'sim')
+            '''
+        )

@@ -10,3 +10,5 @@ venv/
 equipamentos.json
 equipamentos.csv
 equipamentos_backup.json
+equipamentos.db
+equipamentos_backup.db

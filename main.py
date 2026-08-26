@@ -3,6 +3,9 @@ from pathlib import Path
 import csv
 import json
 import shutil
+import sqlite3
+
+import banco
 
 
 ARQUIVO_DADOS = 'equipamentos.json'
@@ -19,7 +22,7 @@ def obter_data_hora():
     return datetime.now().strftime('%d/%m/%Y %H:%M')
 
 
-def carregar_equipamentos():
+def carregar_equipamentos_json():
     try:
         with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as arquivo:
             dados = json.load(arquivo)
@@ -86,30 +89,43 @@ def carregar_equipamentos():
     return equipamentos_convertidos
 
 
-def salvar_equipamentos():
-    try:
-        with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as arquivo:
-            json.dump(
-                equipamentos,
-                arquivo,
-                ensure_ascii=False,
-                indent=4
+def iniciar_banco():
+    banco.criar_tabela()
+    caminho_json = Path(ARQUIVO_DADOS)
+
+    if caminho_json.exists() and not banco.migracao_json_concluida():
+        equipamentos_antigos = carregar_equipamentos_json()
+        quantidade_importada = 0
+
+        for equipamento in equipamentos_antigos:
+            try:
+                banco.inserir_equipamento(equipamento)
+                quantidade_importada += 1
+
+            except sqlite3.IntegrityError:
+                print(
+                    '\nUm equipamento duplicado não foi importado: '
+                    f"{equipamento['patrimonio']}"
+                )
+
+        banco.marcar_migracao_json()
+
+        if quantidade_importada > 0:
+            print(
+                f'\n{quantidade_importada} equipamento(s) '
+                'importado(s) do JSON para o SQLite!'
             )
 
-    except OSError as erro:
-        print(f'\nNão foi possível salvar os dados: {erro}')
-        return False
-
-    return True
+    return banco.listar_equipamentos()
 
 
 def criar_backup():
-    caminho_dados = Path(ARQUIVO_DADOS)
+    caminho_dados = Path(banco.ARQUIVO_BANCO)
 
     if not caminho_dados.exists():
         return
 
-    caminho_backup = caminho_dados.with_name('equipamentos_backup.json')
+    caminho_backup = caminho_dados.with_name('equipamentos_backup.db')
 
     try:
         shutil.copy2(caminho_dados, caminho_backup)
@@ -227,10 +243,23 @@ def cadastrar_equipamento():
         'ultima_atualizacao': data_atual
     }
 
+    try:
+        novo_id = banco.inserir_equipamento(novo_equipamento)
+
+    except sqlite3.IntegrityError:
+        print(
+            '\nNão foi possível cadastrar. '
+            'O patrimônio ou serial já existe!'
+        )
+        return
+
+    novo_equipamento['id'] = novo_id
     equipamentos.append(novo_equipamento)
 
-    if salvar_equipamentos():
-        print('\nEquipamento cadastrado!')
+    print(
+        f'\nEquipamento cadastrado com sucesso! '
+        f'ID: {novo_id}'
+    )
 
 
 def listar_equipamentos():
@@ -421,7 +450,8 @@ def editar_equipamento():
         if confirmacao == 'S':
             criar_backup()
 
-            equipamento.update({
+            equipamento_atualizado = equipamento.copy()
+            equipamento_atualizado.update({
                 'nome': novo_nome,
                 'patrimonio': novo_patrimonio,
                 'serial': novo_serial,
@@ -432,8 +462,24 @@ def editar_equipamento():
                 'ultima_atualizacao': obter_data_hora()
             })
 
-            if salvar_equipamentos():
+            try:
+                atualizou = banco.atualizar_equipamento(
+                    equipamento_atualizado
+                )
+
+            except sqlite3.IntegrityError:
+                print(
+                    '\nNão foi possível atualizar. '
+                    'O patrimônio ou serial já existe!'
+                )
+                return
+
+            if atualizou:
+                equipamento.update(equipamento_atualizado)
                 print('\nEquipamento atualizado com sucesso!')
+
+            else:
+                print('\nEquipamento não encontrado no banco!')
 
         elif confirmacao == 'N':
             print('\nAlteração cancelada!')
@@ -468,10 +514,17 @@ def remover_equipamento():
 
         if confirmacao == 'S':
             criar_backup()
-            equipamentos.remove(equipamento)
 
-            if salvar_equipamentos():
+            removeu = banco.remover_equipamento(
+                equipamento['id']
+            )
+
+            if removeu:
+                equipamentos.remove(equipamento)
                 print('\nEquipamento removido com sucesso!')
+
+            else:
+                print('\nEquipamento não encontrado no banco!')
 
         elif confirmacao == 'N':
             print('\nRemoção cancelada!')
@@ -564,10 +617,13 @@ def exportar_csv():
     print(f'\nEquipamentos exportados para {nome_arquivo}!')
 
 
-equipamentos = carregar_equipamentos()
+equipamentos = []
 
 
 def executar_programa():
+    global equipamentos
+    equipamentos = iniciar_banco()
+
     while True:
         mostrar_menu()
         escolha = input('\nESCOLHA: ').strip()

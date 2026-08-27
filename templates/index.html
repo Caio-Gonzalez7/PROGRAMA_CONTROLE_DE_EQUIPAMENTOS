@@ -11,9 +11,14 @@
             Acompanhe os equipamentos cadastrados e a situação atual de cada item.
         </p>
     </div>
-    <a class="botao botao--primario" href="{{ url_for('cadastrar_equipamento') }}">
-        Cadastrar equipamento
-    </a>
+    <div class="acoes-cabecalho">
+        <a class="botao botao--secundario" href="{{ url_for('exportar_equipamentos') }}">
+            Exportar CSV
+        </a>
+        <a class="botao botao--primario" href="{{ url_for('cadastrar_equipamento') }}">
+            Cadastrar equipamento
+        </a>
+    </div>
 </section>
 
 <section class="resumo" aria-label="Resumo dos equipamentos">
@@ -33,13 +38,67 @@
         <span class="cartao__rotulo">Em manutenção</span>
         <strong class="cartao__valor">{{ resumo.manutencao }}</strong>
     </article>
+    <article class="cartao cartao--baixado">
+        <span class="cartao__rotulo">Baixados</span>
+        <strong class="cartao__valor">{{ resumo.baixados }}</strong>
+    </article>
 </section>
+
+<form class="filtros" method="get" action="{{ url_for('inicio') }}">
+    <div class="grade-filtros">
+        <label class="campo campo--pesquisa">
+            <span>Pesquisar</span>
+            <input
+                type="search"
+                name="q"
+                value="{{ filtros.termo }}"
+                placeholder="Nome, patrimônio, serial, setor..."
+            >
+        </label>
+        <label class="campo">
+            <span>Status</span>
+            <select name="status">
+                <option value="">Todos</option>
+                {% for status in status_validos %}
+                    <option
+                        value="{{ status }}"
+                        {% if filtros.status == status %}selected{% endif %}
+                    >
+                        {{ status }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="campo">
+            <span>Categoria</span>
+            <select name="categoria">
+                <option value="">Todas</option>
+                {% for categoria in categorias %}
+                    <option
+                        value="{{ categoria }}"
+                        {% if filtros.categoria == categoria %}selected{% endif %}
+                    >
+                        {{ categoria }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="botao botao--primario" type="submit">
+            Aplicar filtros
+        </button>
+        {% if filtros_ativos %}
+            <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
+                Limpar
+            </a>
+        {% endif %}
+    </div>
+</form>
 
 <section class="painel-tabela">
     <div class="painel-tabela__cabecalho">
         <div>
             <h2>Equipamentos cadastrados</h2>
-            <p>{{ resumo.total }} registro(s) encontrado(s)</p>
+            <p>{{ quantidade_exibida }} registro(s) encontrado(s)</p>
         </div>
     </div>
 
@@ -53,6 +112,7 @@
                     <th>Localização</th>
                     <th>Status</th>
                     <th>Atualização</th>
+                    <th class="coluna-acoes">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,6 +142,28 @@
                         </span>
                     </td>
                     <td>{{ equipamento.ultima_atualizacao }}</td>
+                    <td>
+                        <div class="acoes-tabela">
+                            <a
+                                class="botao botao--secundario botao--pequeno"
+                                href="{{ url_for(
+                                    'editar_equipamento',
+                                    equipamento_id=equipamento.id
+                                ) }}"
+                            >
+                                Editar
+                            </a>
+                            <a
+                                class="botao botao--perigo botao--pequeno"
+                                href="{{ url_for(
+                                    'remover_equipamento',
+                                    equipamento_id=equipamento.id
+                                ) }}"
+                            >
+                                Remover
+                            </a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -90,8 +172,13 @@
     {% else %}
     <div class="estado-vazio">
         <span class="estado-vazio__icone" aria-hidden="true">0</span>
-        <h3>Nenhum equipamento cadastrado</h3>
-        <p>Cadastre o primeiro equipamento pelo programa de terminal.</p>
+        {% if filtros_ativos %}
+            <h3>Nenhum equipamento encontrado</h3>
+            <p>Altere ou limpe os filtros para visualizar outros registros.</p>
+        {% else %}
+            <h3>Nenhum equipamento cadastrado</h3>
+            <p>Cadastre o primeiro equipamento para começar.</p>
+        {% endif %}
     </div>
     {% endif %}
 </section>

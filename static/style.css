@@ -101,6 +101,13 @@ body {
     align-items: center;
 }
 
+.acoes-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .botao {
     display: inline-flex;
     min-height: 44px;
@@ -129,6 +136,21 @@ body {
     color: var(--azul-950);
     background: var(--branco);
     border-color: var(--cinza-300);
+}
+
+.botao--perigo {
+    color: var(--branco);
+    background: var(--vermelho);
+}
+
+.botao--perigo:hover {
+    background: #8f1c13;
+}
+
+.botao--pequeno {
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
 }
 
 .mensagens {
@@ -187,7 +209,7 @@ h1 {
 
 .resumo {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 16px;
     margin-bottom: 26px;
 }
@@ -223,6 +245,10 @@ h1 {
     background: var(--amarelo);
 }
 
+.cartao--baixado::before {
+    background: var(--vermelho);
+}
+
 .cartao__rotulo {
     display: block;
     min-height: 40px;
@@ -244,6 +270,22 @@ h1 {
     border: 1px solid #e4eaf0;
     border-radius: 14px;
     box-shadow: 0 12px 34px rgb(16 42 67 / 7%);
+}
+
+.filtros {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--branco);
+    border: 1px solid #e4eaf0;
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgb(16 42 67 / 5%);
+}
+
+.grade-filtros {
+    display: grid;
+    grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(150px, 1fr)) auto auto;
+    align-items: end;
+    gap: 12px;
 }
 
 .painel-tabela__cabecalho {
@@ -274,6 +316,16 @@ table {
     min-width: 900px;
     border-collapse: collapse;
     text-align: left;
+}
+
+.coluna-acoes {
+    text-align: right;
+}
+
+.acoes-tabela {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
 }
 
 th {
@@ -455,6 +507,87 @@ td strong {
     gap: 12px;
 }
 
+.confirmacao {
+    width: min(620px, 100%);
+    margin: 32px auto 0;
+    padding: 34px;
+    text-align: center;
+    background: var(--branco);
+    border: 1px solid #e4eaf0;
+    border-radius: 16px;
+    box-shadow: 0 14px 38px rgb(16 42 67 / 9%);
+}
+
+.confirmacao__icone {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 20px;
+    place-items: center;
+    border-radius: 16px;
+    color: var(--vermelho);
+    background: #fee4e2;
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
+.confirmacao__icone--azul {
+    width: 74px;
+    color: var(--azul-800);
+    background: var(--azul-100);
+    font-size: 0.9rem;
+}
+
+.confirmacao .descricao {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.confirmacao__dados {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 28px 0;
+    text-align: left;
+}
+
+.confirmacao__dados div {
+    padding: 13px;
+    background: #f7f9fb;
+    border-radius: 9px;
+}
+
+.confirmacao__dados dt {
+    margin-bottom: 4px;
+    color: var(--cinza-500);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.confirmacao__dados dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    font-weight: 750;
+}
+
+.confirmacao__acoes {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media (max-width: 1050px) {
+    .grade-filtros {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .campo--pesquisa {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (max-width: 850px) {
     .resumo {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -484,6 +617,19 @@ td strong {
         flex-direction: column;
     }
 
+    .acoes-cabecalho {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .grade-filtros {
+        grid-template-columns: 1fr;
+    }
+
+    .campo--pesquisa {
+        grid-column: auto;
+    }
+
     .grade-campos {
         grid-template-columns: 1fr;
     }
@@ -497,6 +643,19 @@ td strong {
     }
 
     .formulario__acoes {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .confirmacao {
+        padding: 25px 20px;
+    }
+
+    .confirmacao__dados {
+        grid-template-columns: 1fr;
+    }
+
+    .confirmacao__acoes {
         display: grid;
         grid-template-columns: 1fr;
     }

@@ -85,6 +85,60 @@ class TestInterfaceFlask(unittest.TestCase):
         self.assertIn('Disponíveis', conteudo)
         self.assertIn('2 registro(s) encontrado(s)', conteudo)
 
+    def test_formulario_de_cadastro_abre(self):
+        resposta = self.cliente.get('/equipamentos/novo')
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn(
+            'Cadastrar equipamento',
+            resposta.get_data(as_text=True)
+        )
+
+    def test_cadastrar_equipamento_pela_interface(self):
+        resposta = self.cliente.post(
+            '/equipamentos/novo',
+            data={
+                'nome': 'Monitor LG',
+                'patrimonio': 'pat002',
+                'serial': 'ser002',
+                'categoria': 'Monitor',
+                'setor': 'Financeiro',
+                'responsavel': 'João',
+                'status': 'Disponível'
+            },
+            follow_redirects=True
+        )
+
+        conteudo = resposta.get_data(as_text=True)
+        equipamentos = banco.listar_equipamentos()
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn('Equipamento cadastrado com sucesso!', conteudo)
+        self.assertIn('Monitor LG', conteudo)
+        self.assertEqual(len(equipamentos), 1)
+        self.assertEqual(equipamentos[0]['patrimonio'], 'PAT002')
+
+    def test_cadastro_bloqueia_patrimonio_duplicado(self):
+        banco.criar_tabela()
+        banco.inserir_equipamento(criar_equipamento())
+
+        resposta = self.cliente.post(
+            '/equipamentos/novo',
+            data={
+                'nome': 'Outro notebook',
+                'patrimonio': 'PAT001',
+                'serial': 'SER999',
+                'categoria': 'Notebook',
+                'status': 'Em uso'
+            }
+        )
+
+        self.assertIn(
+            'O patrimônio ou serial já está cadastrado.',
+            resposta.get_data(as_text=True)
+        )
+        self.assertEqual(len(banco.listar_equipamentos()), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

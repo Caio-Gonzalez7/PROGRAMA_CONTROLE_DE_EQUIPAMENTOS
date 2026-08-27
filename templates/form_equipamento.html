@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 
-{% block titulo %}Cadastrar equipamento | Controle de Equipamentos{% endblock %}
+{% block titulo %}{{ titulo_pagina }} | Controle de Equipamentos{% endblock %}
 
 {% block conteudo %}
 <section class="cabecalho-pagina cabecalho-pagina--formulario">
     <div>
-        <p class="sobretitulo">NOVO REGISTRO</p>
-        <h1>Cadastrar equipamento</h1>
-        <p class="descricao">
-            Preencha os dados abaixo para adicionar um item ao controle.
-        </p>
+        <p class="sobretitulo">{{ sobretitulo }}</p>
+        <h1>{{ titulo_pagina }}</h1>
+        <p class="descricao">{{ descricao_pagina }}</p>
     </div>
     <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
         Voltar ao painel
@@ -121,7 +119,7 @@
             Cancelar
         </a>
         <button class="botao botao--primario" type="submit">
-            Salvar equipamento
+            {{ texto_botao }}
         </button>
     </div>
 </form>

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block titulo %}{{ titulo_pagina }} | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="cabecalho-pagina cabecalho-pagina--formulario">
+    <div>
+        <p class="sobretitulo">{{ sobretitulo }}</p>
+        <h1>{{ titulo_pagina }}</h1>
+        <p class="descricao">{{ descricao_pagina }}</p>
+    </div>
+    <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
+        Voltar ao painel
+    </a>
+</section>
+
+<form class="formulario" method="post">
+    <div class="formulario__secao">
+        <div class="formulario__titulo">
+            <span>01</span>
+            <div>
+                <h2>Identificação</h2>
+                <p>Informações que identificam o equipamento.</p>
+            </div>
+        </div>
+
+        <div class="grade-campos">
+            <label class="campo campo--largo">
+                <span>Nome do equipamento *</span>
+                <input
+                    type="text"
+                    name="nome"
+                    value="{{ dados.nome }}"
+                    placeholder="Ex.: Notebook Dell Latitude"
+                    required
+                    autofocus
+                >
+            </label>
+            <label class="campo">
+                <span>Patrimônio *</span>
+                <input
+                    type="text"
+                    name="patrimonio"
+                    value="{{ dados.patrimonio }}"
+                    placeholder="Ex.: PAT001"
+                    required
+                >
+            </label>
+            <label class="campo">
+                <span>Serial *</span>
+                <input
+                    type="text"
+                    name="serial"
+                    value="{{ dados.serial }}"
+                    placeholder="Ex.: SER001"
+                    required
+                >
+            </label>
+            <label class="campo">
+                <span>Categoria *</span>
+                <input
+                    type="text"
+                    name="categoria"
+                    value="{{ dados.categoria }}"
+                    placeholder="Ex.: Notebook"
+                    required
+                >
+            </label>
+        </div>
+    </div>
+
+    <div class="formulario__secao">
+        <div class="formulario__titulo">
+            <span>02</span>
+            <div>
+                <h2>Alocação e situação</h2>
+                <p>Onde o equipamento está e qual é seu estado atual.</p>
+            </div>
+        </div>
+
+        <div class="grade-campos">
+            <label class="campo">
+                <span>Setor</span>
+                <input
+                    type="text"
+                    name="setor"
+                    value="{{ dados.setor }}"
+                    placeholder="Ex.: Tecnologia da Informação"
+                >
+            </label>
+            <label class="campo">
+                <span>Responsável</span>
+                <input
+                    type="text"
+                    name="responsavel"
+                    value="{{ dados.responsavel }}"
+                    placeholder="Ex.: Caio"
+                >
+            </label>
+            <label class="campo">
+                <span>Status *</span>
+                <select name="status" required>
+                    <option value="">Selecione</option>
+                    {% for status in status_validos %}
+                        <option
+                            value="{{ status }}"
+                            {% if dados.status == status %}selected{% endif %}
+                        >
+                            {{ status }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+
+    <div class="formulario__acoes">
+        <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
+            Cancelar
+        </a>
+        <button class="botao botao--primario" type="submit">
+            {{ texto_botao }}
+        </button>
+    </div>
+</form>
+{% endblock %}

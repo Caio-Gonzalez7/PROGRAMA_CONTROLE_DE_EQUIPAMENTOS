@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Remover equipamento | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="confirmacao">
+    <span class="confirmacao__icone" aria-hidden="true">!</span>
+    <p class="sobretitulo">CONFIRMAR REMOÇÃO</p>
+    <h1>Remover equipamento?</h1>
+    <p class="descricao">
+        Esta ação removerá o registro do banco. Um backup será criado antes.
+    </p>
+
+    <dl class="confirmacao__dados">
+        <div>
+            <dt>Equipamento</dt>
+            <dd>{{ equipamento.nome }}</dd>
+        </div>
+        <div>
+            <dt>Patrimônio</dt>
+            <dd>{{ equipamento.patrimonio }}</dd>
+        </div>
+        <div>
+            <dt>Serial</dt>
+            <dd>{{ equipamento.serial }}</dd>
+        </div>
+    </dl>
+
+    <form class="confirmacao__acoes" method="post">
+        <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
+            Cancelar
+        </a>
+        <button class="botao botao--perigo" type="submit">
+            Confirmar remoção
+        </button>
+    </form>
+</section>
+{% endblock %}

@@ -97,6 +97,23 @@ def listar_equipamentos():
     return [dict(equipamento) for equipamento in resultados]
 
 
+def buscar_equipamento_por_id(equipamento_id):
+    with conectar() as conexao:
+        resultado = conexao.execute(
+            '''
+            SELECT *
+            FROM equipamentos
+            WHERE id = ?
+            ''',
+            (equipamento_id,)
+        ).fetchone()
+
+    if resultado is None:
+        return None
+
+    return dict(resultado)
+
+
 def atualizar_equipamento(equipamento):
     with conectar() as conexao:
         cursor = conexao.execute(

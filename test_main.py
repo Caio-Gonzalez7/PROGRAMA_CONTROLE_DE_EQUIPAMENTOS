@@ -189,10 +189,15 @@ class TestControleEquipamentos(unittest.TestCase):
         )
         self.assertTrue(caminho_backup.exists())
 
-        with sqlite3.connect(caminho_backup) as conexao:
-            patrimonio_antigo = conexao.execute(
+        conexao_backup = sqlite3.connect(caminho_backup)
+
+        try:
+            patrimonio_antigo = conexao_backup.execute(
                 'SELECT patrimonio FROM equipamentos'
             ).fetchone()[0]
+
+        finally:
+            conexao_backup.close()
 
         self.assertEqual(patrimonio_antigo, 'PAT001')
 

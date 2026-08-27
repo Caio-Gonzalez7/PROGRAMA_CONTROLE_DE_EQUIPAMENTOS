@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Página não encontrada | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="confirmacao">
+    <span class="confirmacao__icone confirmacao__icone--azul" aria-hidden="true">404</span>
+    <p class="sobretitulo">REGISTRO NÃO ENCONTRADO</p>
+    <h1>Página não encontrada</h1>
+    <p class="descricao">
+        O equipamento ou endereço solicitado não existe mais.
+    </p>
+    <a class="botao botao--primario" href="{{ url_for('inicio') }}">
+        Voltar ao painel
+    </a>
+</section>
+{% endblock %}

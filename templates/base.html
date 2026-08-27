@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sistema de controle de equipamentos de TI">
+    <title>{% block titulo %}Controle de Equipamentos{% endblock %}</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+<body>
+    <header class="barra-superior">
+        <div class="barra-superior__conteudo">
+            <a class="marca" href="{{ url_for('inicio') }}">
+                <span class="marca__icone" aria-hidden="true">CE</span>
+                <span>Controle de Equipamentos</span>
+            </a>
+            <span class="conexao">
+                <span class="conexao__ponto" aria-hidden="true"></span>
+                SQLite conectado
+            </span>
+        </div>
+    </header>
+
+    <main class="conteudo">
+        {% block conteudo %}{% endblock %}
+    </main>
+</body>
+</html>

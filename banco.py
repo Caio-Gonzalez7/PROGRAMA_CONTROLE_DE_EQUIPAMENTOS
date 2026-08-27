@@ -1,13 +1,25 @@
+from contextlib import contextmanager
 import sqlite3
 
 
 ARQUIVO_BANCO = 'equipamentos.db'
 
 
+@contextmanager
 def conectar():
     conexao = sqlite3.connect(ARQUIVO_BANCO)
     conexao.row_factory = sqlite3.Row
-    return conexao
+
+    try:
+        yield conexao
+        conexao.commit()
+
+    except Exception:
+        conexao.rollback()
+        raise
+
+    finally:
+        conexao.close()
 
 
 def criar_tabela():

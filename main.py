@@ -3,7 +3,6 @@ from pathlib import Path
 import csv
 import json
 import shutil
-import sqlite3
 
 import banco
 
@@ -93,7 +92,11 @@ def iniciar_banco():
     banco.criar_tabela()
     caminho_json = Path(ARQUIVO_DADOS)
 
-    if caminho_json.exists() and not banco.migracao_json_concluida():
+    if (
+        banco.usa_sqlite()
+        and caminho_json.exists()
+        and not banco.migracao_json_concluida()
+    ):
         equipamentos_antigos = carregar_equipamentos_json()
         quantidade_importada = 0
 
@@ -102,7 +105,7 @@ def iniciar_banco():
                 banco.inserir_equipamento(equipamento)
                 quantidade_importada += 1
 
-            except sqlite3.IntegrityError:
+            except banco.ERROS_INTEGRIDADE:
                 print(
                     '\nUm equipamento duplicado não foi importado: '
                     f"{equipamento['patrimonio']}"
@@ -120,6 +123,9 @@ def iniciar_banco():
 
 
 def criar_backup():
+    if banco.usa_postgres():
+        return
+
     caminho_dados = Path(banco.ARQUIVO_BANCO)
 
     if not caminho_dados.exists():
@@ -246,7 +252,7 @@ def cadastrar_equipamento():
     try:
         novo_id = banco.inserir_equipamento(novo_equipamento)
 
-    except sqlite3.IntegrityError:
+    except banco.ERROS_INTEGRIDADE:
         print(
             '\nNão foi possível cadastrar. '
             'O patrimônio ou serial já existe!'
@@ -467,7 +473,7 @@ def editar_equipamento():
                     equipamento_atualizado
                 )
 
-            except sqlite3.IntegrityError:
+            except banco.ERROS_INTEGRIDADE:
                 print(
                     '\nNão foi possível atualizar. '
                     'O patrimônio ou serial já existe!'

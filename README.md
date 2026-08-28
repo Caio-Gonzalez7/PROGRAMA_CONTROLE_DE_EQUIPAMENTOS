@@ -2,6 +2,12 @@
 
 Aplicação web para administrar equipamentos de TI com banco PostgreSQL na nuvem, autenticação, níveis de acesso e histórico de alterações. O projeto começou como um exercício de Python no terminal e evoluiu para um sistema Flask completo, testado e preparado para produção.
 
+## Demonstração online
+
+Acesse o sistema publicado: [controle-equipamentos-caio.onrender.com](https://controle-equipamentos-caio.onrender.com)
+
+> O plano gratuito do Render pode levar cerca de 50 segundos para iniciar após um período sem acessos.
+
 ## Funcionalidades
 
 - Dashboard com resumo e gráficos por status e categoria

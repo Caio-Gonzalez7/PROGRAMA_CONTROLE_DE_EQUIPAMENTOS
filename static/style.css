@@ -664,3 +664,193 @@ td strong {
         min-height: 105px;
     }
 }
+
+.navegacao {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.navegacao a,
+.botao-link {
+    color: #d8e8f3;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.navegacao a:hover,
+.botao-link:hover {
+    color: var(--branco);
+}
+
+.usuario-menu {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--branco);
+}
+
+.usuario-menu > div {
+    display: grid;
+    text-align: right;
+}
+
+.usuario-menu span {
+    color: #b9d2e2;
+    font-size: 0.72rem;
+}
+
+.botao-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.login-pagina {
+    display: grid;
+    min-height: calc(100vh - 190px);
+    place-items: center;
+}
+
+.login-cartao {
+    display: grid;
+    width: min(440px, 100%);
+    gap: 18px;
+    padding: 38px;
+    background: var(--branco);
+    border: 1px solid #e4eaf0;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgb(16 42 67 / 10%);
+}
+
+.login-cartao h1 {
+    font-size: 2rem;
+}
+
+.botao--largo {
+    width: 100%;
+}
+
+.campo-check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--cinza-700);
+    font-size: 0.88rem;
+}
+
+.graficos,
+.duas-colunas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 26px;
+}
+
+.grafico,
+.detalhes {
+    padding: 24px;
+    background: var(--branco);
+    border: 1px solid #e4eaf0;
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgb(16 42 67 / 5%);
+}
+
+.grafico h2 {
+    margin-bottom: 20px;
+    font-size: 1.05rem;
+}
+
+.barra-grafico {
+    margin-bottom: 14px;
+}
+
+.barra-grafico > div,
+.linha-categoria {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    color: var(--cinza-700);
+    font-size: 0.86rem;
+}
+
+.barra-grafico__trilho {
+    display: block;
+    height: 8px;
+    overflow: hidden;
+    background: var(--cinza-100);
+    border-radius: 999px;
+}
+
+.barra-grafico__valor {
+    display: block;
+    height: 100%;
+    background: var(--azul-600);
+    border-radius: inherit;
+}
+
+.barra-grafico__valor--disponivel { background: var(--verde); }
+.barra-grafico__valor--manutencao { background: var(--amarelo); }
+.barra-grafico__valor--baixado { background: var(--vermelho); }
+
+.linha-categoria {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cinza-100);
+}
+
+.formulario--compacto {
+    display: grid;
+    max-width: 620px;
+    gap: 17px;
+    padding: 26px;
+}
+
+.duas-colunas .formulario--compacto {
+    align-self: start;
+}
+
+.paginacao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 18px;
+    border-top: 1px solid var(--cinza-300);
+    font-size: 0.86rem;
+}
+
+.paginacao a {
+    color: var(--azul-600);
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.ajuda {
+    color: var(--cinza-700);
+    font-size: 0.84rem;
+}
+
+@media (max-width: 900px) {
+    .navegacao {
+        display: none;
+    }
+
+    .graficos,
+    .duas-colunas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .usuario-menu > div {
+        display: none;
+    }
+
+    .login-cartao {
+        padding: 26px 20px;
+    }
+}

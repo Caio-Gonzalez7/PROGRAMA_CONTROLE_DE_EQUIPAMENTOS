@@ -8,7 +8,7 @@
     <p class="sobretitulo">CONFIRMAR REMOÇÃO</p>
     <h1>Remover equipamento?</h1>
     <p class="descricao">
-        Esta ação removerá o registro do banco. Um backup será criado antes.
+        Esta ação removerá o registro do banco e ficará registrada no histórico.
     </p>
 
     <dl class="confirmacao__dados">
@@ -27,6 +27,7 @@
     </dl>
 
     <form class="confirmacao__acoes" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
             Cancelar
         </a>

@@ -1,76 +1,116 @@
 # Controle de Equipamentos
 
-Sistema de linha de comando desenvolvido em Python para cadastrar, consultar e acompanhar equipamentos. O projeto começou com estruturas em memória e evoluiu para persistência em SQLite, migração de dados antigos, backups e testes automatizados.
+Aplicação web para administrar equipamentos de TI com banco PostgreSQL na nuvem, autenticação, níveis de acesso e histórico de alterações. O projeto começou como um exercício de Python no terminal e evoluiu para um sistema Flask completo, testado e preparado para produção.
 
 ## Funcionalidades
 
-- Cadastro de equipamentos com nome, patrimônio, número de série, categoria, setor e responsável
-- Controle de status: Em uso, Disponível, Em manutenção e Baixado
-- Edição e remoção com confirmação
-- Validação de campos obrigatórios
-- Bloqueio de patrimônios e números de série duplicados
-- Pesquisa por patrimônio, serial, nome, categoria, setor, responsável ou status
-- Ordenação por nome, patrimônio, categoria ou status
-- Registro das datas de cadastro e última atualização
-- Resumo por status e categoria
-- Exportação dos dados para CSV
-- Backup automático do banco antes de editar ou remover registros
+- Dashboard com resumo e gráficos por status e categoria
+- Cadastro, consulta, pesquisa, filtros, edição e remoção
+- PostgreSQL hospedado no Supabase, com opção de SQLite local
+- Login com senhas armazenadas por hash
+- Perfis Administrador, Operador e Consulta
+- Gestão de usuários e ativação de contas
+- Histórico com usuário, ação, equipamento, data e hora
+- Importação e exportação em CSV
+- Paginação da listagem
+- Página individual e QR Code para cada equipamento
+- Proteção CSRF em formulários
+- Verificação de integridade e bloqueio de duplicidades
+- Health check para monitoramento em produção
+- Testes automáticos no GitHub Actions
 
-## Persistência de dados
+## Permissões
 
-Os dados são armazenados localmente em um banco SQLite (`equipamentos.db`).
+| Perfil | Consultar | Cadastrar e editar | Remover | Gerenciar usuários |
+|---|:---:|:---:|:---:|:---:|
+| Administrador | Sim | Sim | Sim | Sim |
+| Operador | Sim | Sim | Não | Não |
+| Consulta | Sim | Não | Não | Não |
 
-Caso exista um arquivo `equipamentos.json` de uma versão anterior, o programa realiza a migração automática para o SQLite uma única vez, preservando os dados disponíveis e evitando registros duplicados.
+## Tecnologias
 
-## Tecnologias e conceitos praticados
+- Python 3.14
+- Flask, Flask-Login e Flask-WTF
+- PostgreSQL/Supabase e SQLite
+- Psycopg 3
+- HTML e CSS responsivos
+- QR Code e CSV
+- unittest e GitHub Actions
+- Gunicorn e Render Blueprint
 
-- Python
-- SQLite e SQL
-- CRUD
-- Persistência e migração de dados
-- Manipulação de JSON e CSV
-- Funções e modularização
-- Dicionários, listas, condições e estruturas de repetição
-- Tratamento de exceções
-- Validação de entrada e integridade de dados
-- Manipulação de arquivos e criação de backups
-- Testes automatizados com `unittest` e `unittest.mock`
-- Git e GitHub com desenvolvimento por branches
-
-## Estrutura do projeto
-
-- `main.py`: interface de linha de comando e regras da aplicação
-- `banco.py`: criação do banco e operações CRUD no SQLite
-- `test_main.py`: suíte de testes automatizados
-- `.gitignore`: impede o versionamento de bancos, backups e arquivos locais gerados pelo programa
-
-## Como executar
-
-Tenha o Python 3 instalado, clone o repositório e execute:
+## Instalação
 
 ```bash
 git clone https://github.com/Caio-Gonzalez7/PROGRAMA_CONTROLE_DE_EQUIPAMENTOS.git
 cd PROGRAMA_CONTROLE_DE_EQUIPAMENTOS
-python main.py
+python -m pip install -r requirements.txt
 ```
 
-O banco de dados e as tabelas são criados automaticamente na primeira execução.
+Copie `.env.example` para `.env` e configure:
 
-## Como executar os testes
+```env
+DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/postgres
+FLASK_SECRET_KEY=uma-chave-longa-e-aleatoria
+FLASK_ENV=development
+```
+
+O arquivo `.env` é ignorado pelo Git e nunca deve ser enviado ao repositório.
+
+## Primeiro administrador
+
+Após configurar o banco, execute:
 
 ```bash
-python -m unittest -v
+python criar_admin.py
 ```
 
-A suíte atual possui 11 testes que verificam cadastro, bloqueio de duplicados, pesquisa, edição, remoção, backup, migração do JSON, ordenação, resumo e exportação CSV.
+Informe nome, e-mail e uma senha com no mínimo oito caracteres. Depois inicie a aplicação:
 
-## Próximas melhorias
+```bash
+python app.py
+```
 
-- Criar uma interface gráfica
-- Separar ainda mais as regras de negócio da interface de linha de comando
-- Adicionar filtros por período de cadastro e atualização
-- Gerar relatórios mais completos
+Acesse `http://127.0.0.1:5000`.
+
+## Migração do SQLite
+
+Para copiar equipamentos antigos de `equipamentos.db` para o Supabase:
+
+```bash
+python migrar_para_supabase.py
+```
+
+A migração preserva o SQLite, pula duplicidades e informa o resultado final.
+
+## Testes
+
+```bash
+python -m unittest -v test_main.py test_app.py test_autenticacao.py
+```
+
+A suíte possui 30 testes cobrindo terminal, interface Flask, banco, login, permissões, usuários, histórico, CSV, paginação e QR Code.
+
+## Publicação
+
+O arquivo `render.yaml` prepara a aplicação para o Render. Na plataforma de hospedagem, configure `DATABASE_URL` como variável secreta. `FLASK_SECRET_KEY` é gerada automaticamente pelo Blueprint.
+
+Comando de produção:
+
+```bash
+gunicorn --bind 0.0.0.0:$PORT app:app
+```
+
+## Estrutura principal
+
+- `app.py`: rotas e interface web
+- `autenticacao.py`: usuário autenticado e permissões
+- `banco.py`: camada de acesso ao PostgreSQL e SQLite
+- `criar_admin.py`: criação segura do primeiro administrador
+- `main.py`: versão de terminal preservada
+- `migrar_para_supabase.py`: migração do banco local
+- `templates/` e `static/`: interface visual
+- `test_*.py`: testes automatizados
 
 ## Status
 
-Projeto educacional em desenvolvimento contínuo, criado para aplicar na prática conceitos de Python, banco de dados, testes e versionamento.
+Projeto educacional em desenvolvimento contínuo, criado para demonstrar Python, Flask, SQL, segurança web, testes e versionamento profissional com Git e GitHub.

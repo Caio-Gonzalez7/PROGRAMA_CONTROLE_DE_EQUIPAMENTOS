@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Importar CSV | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="cabecalho-pagina cabecalho-pagina--formulario"><div><p class="sobretitulo">IMPORTAÇÃO</p><h1>Importar equipamentos</h1><p class="descricao">Envie um CSV exportado pelo próprio sistema ou com as colunas obrigatórias.</p></div><a class="botao botao--secundario" href="{{ url_for('inicio') }}">Voltar</a></section>
+<form class="formulario formulario--compacto" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Arquivo CSV</span><input type="file" name="arquivo" accept=".csv,text/csv" required></label>
+    <p class="ajuda">Colunas obrigatórias: nome, patrimonio, serial, categoria e status.</p>
+    <button class="botao botao--primario" type="submit">Importar arquivo</button>
+</form>
+{% endblock %}

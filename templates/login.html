@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Entrar | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="login-pagina">
+    <form class="login-cartao" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <p class="sobretitulo">ACESSO SEGURO</p>
+        <h1>Entrar no sistema</h1>
+        <p class="descricao">Use a conta criada pelo administrador.</p>
+
+        <label class="campo">
+            <span>E-mail</span>
+            <input type="email" name="email" value="{{ email }}" required autofocus autocomplete="username">
+        </label>
+        <label class="campo">
+            <span>Senha</span>
+            <input type="password" name="senha" required autocomplete="current-password">
+        </label>
+        <label class="campo-check">
+            <input type="checkbox" name="lembrar" value="1">
+            <span>Manter minha sessão</span>
+        </label>
+        <button class="botao botao--primario botao--largo" type="submit">Entrar</button>
+    </form>
+</section>
+{% endblock %}

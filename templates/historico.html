@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Histórico | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="cabecalho-pagina"><div><p class="sobretitulo">AUDITORIA</p><h1>Histórico de movimentações</h1><p class="descricao">Últimas alterações realizadas no inventário.</p></div></section>
+<section class="painel-tabela">
+    {% if registros %}
+    <div class="tabela-container"><table><thead><tr><th>Data e hora</th><th>Usuário</th><th>Ação</th><th>Equipamento</th></tr></thead><tbody>
+        {% for registro in registros %}
+        <tr><td>{{ registro.data_hora }}</td><td><strong>{{ registro.usuario_nome }}</strong></td><td><span class="status status--padrao">{{ registro.acao }}</span></td><td>{% if registro.detalhes.equipamento %}{{ registro.detalhes.equipamento.nome }} — {{ registro.detalhes.equipamento.patrimonio }}{% elif registro.detalhes.depois %}{{ registro.detalhes.depois.nome }} — {{ registro.detalhes.depois.patrimonio }}{% else %}ID {{ registro.equipamento_id }}{% endif %}</td></tr>
+        {% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="estado-vazio"><h3>Nenhuma movimentação registrada</h3><p>As próximas alterações aparecerão aqui.</p></div>{% endif %}
+</section>
+{% endblock %}

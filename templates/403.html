@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Acesso negado | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="confirmacao"><span class="confirmacao__icone" aria-hidden="true">!</span><p class="sobretitulo">ACESSO NEGADO</p><h1>Você não possui permissão</h1><p class="descricao">Seu perfil não permite realizar esta operação.</p><a class="botao botao--primario" href="{{ url_for('inicio') }}">Voltar ao painel</a></section>
+{% endblock %}

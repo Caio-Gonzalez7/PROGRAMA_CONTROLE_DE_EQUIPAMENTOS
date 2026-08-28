@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+os.environ['MODO_BANCO'] = 'sqlite'
+
 import banco
 import main
 

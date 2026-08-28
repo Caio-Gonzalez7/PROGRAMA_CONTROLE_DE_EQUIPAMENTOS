@@ -3,7 +3,6 @@ from datetime import datetime
 from io import StringIO
 from pathlib import Path
 import shutil
-import sqlite3
 
 from flask import (
     abort,
@@ -65,6 +64,9 @@ def validar_dados(dados):
 
 
 def criar_backup():
+    if banco.usa_postgres():
+        return
+
     caminho_banco = Path(banco.ARQUIVO_BANCO)
 
     if not caminho_banco.exists():
@@ -197,7 +199,7 @@ def criar_app(configuracao_teste=None):
                     banco.criar_tabela()
                     banco.inserir_equipamento(novo_equipamento)
 
-                except sqlite3.IntegrityError:
+                except banco.ERROS_INTEGRIDADE:
                     flash(
                         'O patrimônio ou serial já está cadastrado.',
                         'erro'
@@ -260,7 +262,7 @@ def criar_app(configuracao_teste=None):
                         equipamento_atualizado
                     )
 
-                except sqlite3.IntegrityError:
+                except banco.ERROS_INTEGRIDADE:
                     flash(
                         'O patrimônio ou serial já está cadastrado.',
                         'erro'

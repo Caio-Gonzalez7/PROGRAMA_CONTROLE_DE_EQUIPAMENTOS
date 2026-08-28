@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Sistema de controle de equipamentos de TI">
     <title>{% block titulo %}Controle de Equipamentos{% endblock %}</title>
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header class="barra-superior">
@@ -17,10 +14,31 @@
                 <span class="marca__icone" aria-hidden="true">CE</span>
                 <span>Controle de Equipamentos</span>
             </a>
+
+            {% if current_user.is_authenticated %}
+            <nav class="navegacao" aria-label="Navegação principal">
+                <a href="{{ url_for('inicio') }}">Equipamentos</a>
+                <a href="{{ url_for('historico') }}">Histórico</a>
+                {% if current_user.perfil == 'administrador' %}
+                    <a href="{{ url_for('usuarios') }}">Usuários</a>
+                {% endif %}
+            </nav>
+            <div class="usuario-menu">
+                <div>
+                    <strong>{{ current_user.nome }}</strong>
+                    <span>{{ perfis[current_user.perfil] }}</span>
+                </div>
+                <form method="post" action="{{ url_for('sair') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="botao-link" type="submit">Sair</button>
+                </form>
+            </div>
+            {% else %}
             <span class="conexao">
                 <span class="conexao__ponto" aria-hidden="true"></span>
-                SQLite conectado
+                {{ nome_backend }}
             </span>
+            {% endif %}
         </div>
     </header>
 

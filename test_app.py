@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+os.environ['MODO_BANCO'] = 'sqlite'
+
 import banco
 from app import criar_app
 

@@ -12,174 +12,91 @@
         </p>
     </div>
     <div class="acoes-cabecalho">
-        <a class="botao botao--secundario" href="{{ url_for('exportar_equipamentos') }}">
-            Exportar CSV
-        </a>
-        <a class="botao botao--primario" href="{{ url_for('cadastrar_equipamento') }}">
-            Cadastrar equipamento
-        </a>
+        <a class="botao botao--secundario" href="{{ url_for('exportar_equipamentos') }}">Exportar CSV</a>
+        {% if current_user.perfil in ['administrador', 'operador'] %}
+        <a class="botao botao--secundario" href="{{ url_for('importar_equipamentos') }}">Importar CSV</a>
+        <a class="botao botao--primario" href="{{ url_for('cadastrar_equipamento') }}">Cadastrar equipamento</a>
+        {% endif %}
     </div>
 </section>
 
 <section class="resumo" aria-label="Resumo dos equipamentos">
-    <article class="cartao cartao--total">
-        <span class="cartao__rotulo">Total de equipamentos</span>
-        <strong class="cartao__valor">{{ resumo.total }}</strong>
+    <article class="cartao cartao--total"><span class="cartao__rotulo">Total de equipamentos</span><strong class="cartao__valor">{{ resumo.total }}</strong></article>
+    <article class="cartao cartao--uso"><span class="cartao__rotulo">Em uso</span><strong class="cartao__valor">{{ resumo.em_uso }}</strong></article>
+    <article class="cartao cartao--disponivel"><span class="cartao__rotulo">Disponíveis</span><strong class="cartao__valor">{{ resumo.disponiveis }}</strong></article>
+    <article class="cartao cartao--manutencao"><span class="cartao__rotulo">Em manutenção</span><strong class="cartao__valor">{{ resumo.manutencao }}</strong></article>
+    <article class="cartao cartao--baixado"><span class="cartao__rotulo">Baixados</span><strong class="cartao__valor">{{ resumo.baixados }}</strong></article>
+</section>
+
+{% if resumo.total %}
+<section class="graficos" aria-label="Distribuição dos equipamentos">
+    <article class="grafico">
+        <h2>Distribuição por status</h2>
+        {% for rotulo, valor, classe in [
+            ('Em uso', resumo.em_uso, 'uso'),
+            ('Disponíveis', resumo.disponiveis, 'disponivel'),
+            ('Em manutenção', resumo.manutencao, 'manutencao'),
+            ('Baixados', resumo.baixados, 'baixado')
+        ] %}
+        <div class="barra-grafico">
+            <div><span>{{ rotulo }}</span><strong>{{ valor }}</strong></div>
+            <span class="barra-grafico__trilho"><span class="barra-grafico__valor barra-grafico__valor--{{ classe }}" style="width: {{ (valor * 100 / resumo.total)|round|int }}%"></span></span>
+        </div>
+        {% endfor %}
     </article>
-    <article class="cartao cartao--uso">
-        <span class="cartao__rotulo">Em uso</span>
-        <strong class="cartao__valor">{{ resumo.em_uso }}</strong>
-    </article>
-    <article class="cartao cartao--disponivel">
-        <span class="cartao__rotulo">Disponíveis</span>
-        <strong class="cartao__valor">{{ resumo.disponiveis }}</strong>
-    </article>
-    <article class="cartao cartao--manutencao">
-        <span class="cartao__rotulo">Em manutenção</span>
-        <strong class="cartao__valor">{{ resumo.manutencao }}</strong>
-    </article>
-    <article class="cartao cartao--baixado">
-        <span class="cartao__rotulo">Baixados</span>
-        <strong class="cartao__valor">{{ resumo.baixados }}</strong>
+    <article class="grafico">
+        <h2>Equipamentos por categoria</h2>
+        {% for categoria, quantidade in quantidades_categoria.items() %}
+        <div class="linha-categoria"><span>{{ categoria }}</span><strong>{{ quantidade }}</strong></div>
+        {% endfor %}
     </article>
 </section>
+{% endif %}
 
 <form class="filtros" method="get" action="{{ url_for('inicio') }}">
     <div class="grade-filtros">
-        <label class="campo campo--pesquisa">
-            <span>Pesquisar</span>
-            <input
-                type="search"
-                name="q"
-                value="{{ filtros.termo }}"
-                placeholder="Nome, patrimônio, serial, setor..."
-            >
-        </label>
-        <label class="campo">
-            <span>Status</span>
-            <select name="status">
-                <option value="">Todos</option>
-                {% for status in status_validos %}
-                    <option
-                        value="{{ status }}"
-                        {% if filtros.status == status %}selected{% endif %}
-                    >
-                        {{ status }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label>
-        <label class="campo">
-            <span>Categoria</span>
-            <select name="categoria">
-                <option value="">Todas</option>
-                {% for categoria in categorias %}
-                    <option
-                        value="{{ categoria }}"
-                        {% if filtros.categoria == categoria %}selected{% endif %}
-                    >
-                        {{ categoria }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label>
-        <button class="botao botao--primario" type="submit">
-            Aplicar filtros
-        </button>
-        {% if filtros_ativos %}
-            <a class="botao botao--secundario" href="{{ url_for('inicio') }}">
-                Limpar
-            </a>
-        {% endif %}
+        <label class="campo campo--pesquisa"><span>Pesquisar</span><input type="search" name="q" value="{{ filtros.termo }}" placeholder="Nome, patrimônio, serial, setor..."></label>
+        <label class="campo"><span>Status</span><select name="status"><option value="">Todos</option>{% for status in status_validos %}<option value="{{ status }}" {% if filtros.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></label>
+        <label class="campo"><span>Categoria</span><select name="categoria"><option value="">Todas</option>{% for categoria in categorias %}<option value="{{ categoria }}" {% if filtros.categoria == categoria %}selected{% endif %}>{{ categoria }}</option>{% endfor %}</select></label>
+        <button class="botao botao--primario" type="submit">Aplicar filtros</button>
+        {% if filtros_ativos %}<a class="botao botao--secundario" href="{{ url_for('inicio') }}">Limpar</a>{% endif %}
     </div>
 </form>
 
 <section class="painel-tabela">
-    <div class="painel-tabela__cabecalho">
-        <div>
-            <h2>Equipamentos cadastrados</h2>
-            <p>{{ quantidade_exibida }} registro(s) encontrado(s)</p>
-        </div>
-    </div>
-
+    <div class="painel-tabela__cabecalho"><div><h2>Equipamentos cadastrados</h2><p>{{ quantidade_exibida }} registro(s) encontrado(s)</p></div></div>
     {% if equipamentos %}
     <div class="tabela-container">
         <table>
-            <thead>
-                <tr>
-                    <th>Equipamento</th>
-                    <th>Identificação</th>
-                    <th>Localização</th>
-                    <th>Status</th>
-                    <th>Atualização</th>
-                    <th class="coluna-acoes">Ações</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Equipamento</th><th>Identificação</th><th>Localização</th><th>Status</th><th>Atualização</th><th class="coluna-acoes">Ações</th></tr></thead>
             <tbody>
                 {% for equipamento in equipamentos %}
-                {% set classe_status = {
-                    'Em uso': 'status--uso',
-                    'Disponível': 'status--disponivel',
-                    'Em manutenção': 'status--manutencao',
-                    'Baixado': 'status--baixado'
-                }.get(equipamento.status, 'status--padrao') %}
+                {% set classe_status = {'Em uso': 'status--uso', 'Disponível': 'status--disponivel', 'Em manutenção': 'status--manutencao', 'Baixado': 'status--baixado'}.get(equipamento.status, 'status--padrao') %}
                 <tr>
-                    <td>
-                        <strong>{{ equipamento.nome }}</strong>
-                        <span>{{ equipamento.categoria }}</span>
-                    </td>
-                    <td>
-                        <strong>{{ equipamento.patrimonio }}</strong>
-                        <span>Serial: {{ equipamento.serial }}</span>
-                    </td>
-                    <td>
-                        <strong>{{ equipamento.setor }}</strong>
-                        <span>{{ equipamento.responsavel }}</span>
-                    </td>
-                    <td>
-                        <span class="status {{ classe_status }}">
-                            {{ equipamento.status }}
-                        </span>
-                    </td>
+                    <td><strong>{{ equipamento.nome }}</strong><span>{{ equipamento.categoria }}</span></td>
+                    <td><strong>{{ equipamento.patrimonio }}</strong><span>Serial: {{ equipamento.serial }}</span></td>
+                    <td><strong>{{ equipamento.setor }}</strong><span>{{ equipamento.responsavel }}</span></td>
+                    <td><span class="status {{ classe_status }}">{{ equipamento.status }}</span></td>
                     <td>{{ equipamento.ultima_atualizacao }}</td>
-                    <td>
-                        <div class="acoes-tabela">
-                            <a
-                                class="botao botao--secundario botao--pequeno"
-                                href="{{ url_for(
-                                    'editar_equipamento',
-                                    equipamento_id=equipamento.id
-                                ) }}"
-                            >
-                                Editar
-                            </a>
-                            <a
-                                class="botao botao--perigo botao--pequeno"
-                                href="{{ url_for(
-                                    'remover_equipamento',
-                                    equipamento_id=equipamento.id
-                                ) }}"
-                            >
-                                Remover
-                            </a>
-                        </div>
-                    </td>
+                    <td><div class="acoes-tabela">
+                        <a class="botao botao--secundario botao--pequeno" href="{{ url_for('detalhar_equipamento', equipamento_id=equipamento.id) }}">Ver</a>
+                        {% if current_user.perfil in ['administrador', 'operador'] %}<a class="botao botao--secundario botao--pequeno" href="{{ url_for('editar_equipamento', equipamento_id=equipamento.id) }}">Editar</a>{% endif %}
+                        {% if current_user.perfil == 'administrador' %}<a class="botao botao--perigo botao--pequeno" href="{{ url_for('remover_equipamento', equipamento_id=equipamento.id) }}">Remover</a>{% endif %}
+                    </div></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% if total_paginas > 1 %}
+    <nav class="paginacao" aria-label="Paginação">
+        {% if pagina > 1 %}<a href="{{ url_for('inicio', pagina=pagina-1, q=filtros.termo, status=filtros.status, categoria=filtros.categoria) }}">Anterior</a>{% endif %}
+        <span>Página {{ pagina }} de {{ total_paginas }}</span>
+        {% if pagina < total_paginas %}<a href="{{ url_for('inicio', pagina=pagina+1, q=filtros.termo, status=filtros.status, categoria=filtros.categoria) }}">Próxima</a>{% endif %}
+    </nav>
+    {% endif %}
     {% else %}
-    <div class="estado-vazio">
-        <span class="estado-vazio__icone" aria-hidden="true">0</span>
-        {% if filtros_ativos %}
-            <h3>Nenhum equipamento encontrado</h3>
-            <p>Altere ou limpe os filtros para visualizar outros registros.</p>
-        {% else %}
-            <h3>Nenhum equipamento cadastrado</h3>
-            <p>Cadastre o primeiro equipamento para começar.</p>
-        {% endif %}
-    </div>
+    <div class="estado-vazio"><span class="estado-vazio__icone" aria-hidden="true">0</span>{% if filtros_ativos %}<h3>Nenhum equipamento encontrado</h3><p>Altere ou limpe os filtros para visualizar outros registros.</p>{% else %}<h3>Nenhum equipamento cadastrado</h3><p>Cadastre o primeiro equipamento para começar.</p>{% endif %}</div>
     {% endif %}
 </section>
 {% endblock %}

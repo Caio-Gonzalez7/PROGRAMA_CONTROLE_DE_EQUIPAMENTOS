@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Editar usuário | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="cabecalho-pagina cabecalho-pagina--formulario"><div><p class="sobretitulo">ADMINISTRAÇÃO</p><h1>Editar usuário</h1></div><a class="botao botao--secundario" href="{{ url_for('usuarios') }}">Voltar</a></section>
+<form class="formulario formulario--compacto" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="campo"><span>Nome</span><input type="text" name="nome" value="{{ usuario.nome }}" required></label>
+    <label class="campo"><span>E-mail</span><input type="email" name="email" value="{{ usuario.email }}" required></label>
+    <label class="campo"><span>Perfil</span><select name="perfil">{% for valor, nome in perfis.items() %}<option value="{{ valor }}" {% if usuario.perfil == valor %}selected{% endif %}>{{ nome }}</option>{% endfor %}</select></label>
+    <label class="campo"><span>Nova senha (opcional)</span><input type="password" name="senha" minlength="8"></label>
+    <label class="campo-check"><input type="checkbox" name="ativo" value="1" {% if usuario.ativo %}checked{% endif %}><span>Conta ativa</span></label>
+    <button class="botao botao--primario" type="submit">Salvar usuário</button>
+</form>
+{% endblock %}

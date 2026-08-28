@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block titulo %}{{ equipamento.nome }} | Controle de Equipamentos{% endblock %}
+
+{% block conteudo %}
+<section class="cabecalho-pagina"><div><p class="sobretitulo">DETALHES DO EQUIPAMENTO</p><h1>{{ equipamento.nome }}</h1><p class="descricao">Patrimônio {{ equipamento.patrimonio }}</p></div><div class="acoes-cabecalho"><a class="botao botao--secundario" href="{{ url_for('qrcode_equipamento', equipamento_id=equipamento.id) }}">Baixar QR Code</a>{% if current_user.perfil in ['administrador', 'operador'] %}<a class="botao botao--primario" href="{{ url_for('editar_equipamento', equipamento_id=equipamento.id) }}">Editar</a>{% endif %}</div></section>
+<section class="detalhes"><dl class="confirmacao__dados"><div><dt>Nome</dt><dd>{{ equipamento.nome }}</dd></div><div><dt>Patrimônio</dt><dd>{{ equipamento.patrimonio }}</dd></div><div><dt>Serial</dt><dd>{{ equipamento.serial }}</dd></div><div><dt>Categoria</dt><dd>{{ equipamento.categoria }}</dd></div><div><dt>Setor</dt><dd>{{ equipamento.setor }}</dd></div><div><dt>Responsável</dt><dd>{{ equipamento.responsavel }}</dd></div><div><dt>Status</dt><dd>{{ equipamento.status }}</dd></div><div><dt>Cadastro</dt><dd>{{ equipamento.data_cadastro }}</dd></div><div><dt>Atualização</dt><dd>{{ equipamento.ultima_atualizacao }}</dd></div></dl></section>
+{% endblock %}
